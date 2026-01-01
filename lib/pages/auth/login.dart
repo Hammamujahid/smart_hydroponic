@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/bottom_bar.dart';
 import 'package:smart_hydroponic/pages/auth/register.dart';
+import 'package:smart_hydroponic/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,6 +13,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -72,39 +85,69 @@ class _LoginPageState extends State<LoginPage> {
                     height: 30,
                   ),
                   Container(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
                       width: screenWidth,
                       height: 50,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
                           hintText: "Email",
+                          border: InputBorder.none,
                         ),
                       )),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
                     width: screenWidth,
                     height: 50,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
                         hintText: "Password",
+                        border: InputBorder.none,
                       ),
                       obscureText: true,
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (context) => const BottomBar()));
+                    onTap: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter email and password'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        await AuthService().login(
+                          email: email,
+                          password: password,
+                        );
+
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const BottomBar()));
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
                     },
                     child: Container(
                       margin: const EdgeInsets.only(top: 30),
@@ -147,7 +190,8 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => RegisterPage()));
+                                    builder: (context) =>
+                                        const RegisterPage()));
                           },
                           child: const Text(
                             "Sign Up",

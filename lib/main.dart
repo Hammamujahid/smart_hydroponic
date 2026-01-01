@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:smart_hydroponic/pages/auth/login.dart';
+import 'package:smart_hydroponic/pages/dashboard.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -20,10 +22,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(useMaterial3: true),
-      home: const LoginPage()
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(useMaterial3: true),
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+            if (snapshot.hasError) {
+              return const Text('Something went wrong');
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text("Loading...");
+            }
+
+            if (!snapshot.hasData) {
+              return const LoginPage();
+            }
+
+            return const Dashboard();
+          },
+        ));
   }
 }

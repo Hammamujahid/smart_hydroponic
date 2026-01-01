@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/pages/auth/login.dart';
+import 'package:smart_hydroponic/services/auth_service.dart';
 import 'package:smart_hydroponic/services/rtdb_service.dart';
 import 'package:smart_hydroponic/widgets/control_card.dart';
 import 'package:smart_hydroponic/widgets/sensor_card.dart';
@@ -21,6 +22,15 @@ class _DashboardState extends State<Dashboard> {
   final ValueNotifier<bool> waterController = ValueNotifier<bool>(false);
   final ValueNotifier<bool> nutrientController = ValueNotifier<bool>(false);
   final ValueNotifier<double> nutrientLevel = ValueNotifier<double>(0.0);
+
+  @override
+  void dispose() {
+    controllerMode.dispose();
+    waterController.dispose();
+    nutrientController.dispose();
+    nutrientLevel.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -84,9 +94,15 @@ class _DashboardState extends State<Dashboard> {
             Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()));
+                  onTap: () async {
+                    try {
+                      AuthService().logout();
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(e.toString())));
+                    }
                   },
                   child: const CircleAvatar(
                     backgroundColor: Color(0xFFE0F2FE),

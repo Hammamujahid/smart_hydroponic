@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/pages/auth/login.dart';
+import 'package:smart_hydroponic/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -9,6 +12,20 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _usernameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -53,7 +70,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 30,),
+                  const SizedBox(
+                    height: 30,
+                  ),
                   const Row(
                     children: [
                       Text(
@@ -78,10 +97,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          hintText: "Email",
-                        ),
+                      child: TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                            hintText: "Email", border: InputBorder.none),
                       )),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
@@ -93,10 +112,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        hintText: "Password",
-                      ),
+                    child: TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                          hintText: "Password", border: InputBorder.none),
                       obscureText: true,
                     ),
                   ),
@@ -110,10 +129,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        hintText: "Confirm Password",
-                      ),
+                    child: TextField(
+                      controller: _confirmPasswordController,
+                      decoration: const InputDecoration(
+                          hintText: "Confirm Password",
+                          border: InputBorder.none),
                       obscureText: true,
                     ),
                   ),
@@ -127,17 +147,62 @@ class _RegisterPageState extends State<RegisterPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
                           hintText: "Username",
+                          border: InputBorder.none,
                         ),
                       )),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.pop(
+                    onTap: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      final confirmPassword =
+                          _confirmPasswordController.text.trim();
+                      final username = _usernameController.text.trim();
+
+                      if (email.isEmpty ||
+                          password.isEmpty ||
+                          confirmPassword.isEmpty ||
+                          username.isEmpty) {
+                        // Show error if any field is empty
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please fill in all fields"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (password != confirmPassword) {
+                        // Show error if passwords do not match
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Passwords do not match"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        await AuthService().register(
+                          email: email,
+                          password: password,
+                          username: username,
+                        );
+
+                        if (!mounted) return;
+
+                        Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginPage()));
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
                     },
                     child: Container(
                       margin: const EdgeInsets.only(top: 30),
