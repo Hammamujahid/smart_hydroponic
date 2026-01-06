@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:smart_hydroponic/pages/auth/login.dart';
-import 'package:smart_hydroponic/pages/dashboard.dart';
+import 'package:smart_hydroponic/pages/pairing.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
               return const LoginPage();
             }
 
-            return const Dashboard();
+            return const PairingScreen();
           },
         ));
   }

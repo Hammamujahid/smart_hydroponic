@@ -42,6 +42,8 @@ dependencies:
   cloud_firestore: 6.1.1
   firebase_core: 4.3.0
   firebase_auth: 6.1.3
+  mobile_scanner: 7.1.4
+  barcode_scanner: 7.1.2
 
 dev_dependencies:
   flutter_test:

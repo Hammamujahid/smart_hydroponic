@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/bottom_bar.dart';
 import 'package:smart_hydroponic/pages/auth/register.dart';
+import 'package:smart_hydroponic/pages/pairing.dart';
 import 'package:smart_hydroponic/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const BottomBar()));
+                                builder: (context) => const PairingScreen()));
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(e.toString())),

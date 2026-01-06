@@ -97,8 +97,7 @@ class _DashboardState extends State<Dashboard> {
                   onTap: () async {
                     try {
                       AuthService().logout();
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()));
+                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LoginPage()), (_) => false);
                     } catch (e) {
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(e.toString())));
