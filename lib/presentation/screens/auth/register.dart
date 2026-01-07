@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:smart_hydroponic/pages/auth/login.dart';
-import 'package:smart_hydroponic/services/auth_service.dart';
+import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
+import 'package:smart_hydroponic/data/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

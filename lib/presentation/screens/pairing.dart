@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hydroponic/bottom_bar.dart';
-import 'package:smart_hydroponic/widgets/qr_scanner.dart';
+import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
+import 'package:smart_hydroponic/presentation/widgets/qr_scanner.dart';
 
 class PairingScreen extends StatefulWidget {
   const PairingScreen({super.key});

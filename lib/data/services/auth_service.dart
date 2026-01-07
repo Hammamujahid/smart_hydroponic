@@ -53,8 +53,21 @@ class AuthService {
     }
   }
 
+  // ========== SESSION ==========
   Future<void> logout() async {
     // Logout logic here
     await FirebaseAuth.instance.signOut();
   }
+
+    Stream<User?> get authStateChanges =>
+      FirebaseAuth.instance.authStateChanges();
+
+  User? get currentUser =>
+      FirebaseAuth.instance.currentUser;
+
+  bool get isLoggedIn =>
+      FirebaseAuth.instance.currentUser != null;
+
+  String? get uid =>
+      FirebaseAuth.instance.currentUser?.uid;
 }

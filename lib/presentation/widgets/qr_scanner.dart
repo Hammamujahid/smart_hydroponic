@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:smart_hydroponic/bottom_bar.dart';
-import 'package:smart_hydroponic/services/device_service.dart';
+import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
+import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
 
-class QrScanner extends StatefulWidget {
+class QrScanner extends ConsumerStatefulWidget {
   /// Constructor for simple Mobile Scanner example
   const QrScanner({super.key});
 
   @override
-  State<QrScanner> createState() => _QrScannerState();
+  ConsumerState<QrScanner> createState() => _QrScannerState();
 }
 
-class _QrScannerState extends State<QrScanner> {
+class _QrScannerState extends ConsumerState<QrScanner> {
   Barcode? _barcode;
 
   Widget _barcodePreview(Barcode? value) {
@@ -32,18 +33,26 @@ class _QrScannerState extends State<QrScanner> {
           style: const TextStyle(color: Colors.white),
         ),
         ElevatedButton(
-            onPressed: () {
-              final isDeviceAvailable =
-                  DeviceService().getDeviceById(value.displayValue!);
-              if (isDeviceAvailable['claimed'] == false) {
-                DeviceService().updateDeviceById(
-                  value.displayValue!,
-                  null,
-                  true,
-                  DateTime.now(),
-                );
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => BottomBar()), (_) => false);
+            onPressed: () async {
+              final deviceId = value.displayValue!;
+
+              final device =
+                  await ref.read(deviceProvider).getDeviceById(deviceId);
+
+              if (device == null) {
+                print("Device tidak ditemukan");
+                return;
               }
+
+              if (device.userId != null && device.userId!.isNotEmpty) {
+                print("Device sudah dipair");
+                return;
+              }
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const BottomBar()),
+                (_) => false,
+              );
             },
             child: const Text("Next")),
       ],

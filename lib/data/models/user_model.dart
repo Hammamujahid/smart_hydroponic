@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class User {
+class UserModel {
   final String userId;
   final String email;
   final String username;
@@ -8,7 +8,7 @@ class User {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  User({
+  UserModel({
     required this.userId,
     required this.email,
     required this.username,
@@ -17,17 +17,14 @@ class User {
     required this.updatedAt,
   });
 
-  factory User.fromFirestore (DocumentSnapshot<Map<String, dynamic>> snapshot, SnapshotOptions? options){
-    final data = snapshot.data()!;
-    return User(
-      userId: snapshot.id,
-      email: data['email'] ?? '',
-      username: data['username'] ?? '',
-      deviceId: data['deviceId'],
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ??
-          DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ??
-          DateTime.fromMillisecondsSinceEpoch(0),
+  factory UserModel.fromFirestore (DocumentSnapshot<Map<String, dynamic>> doc){
+    return UserModel(
+      userId: doc.id,
+      email: doc.data()!['email'],
+      username: doc.data()!['username'],
+      deviceId: doc.data()!['deviceId'] ?? '',
+      createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
+      updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate()
     );
   }
 

@@ -1,11 +1,11 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_hydroponic/pages/auth/login.dart';
-import 'package:smart_hydroponic/services/auth_service.dart';
-import 'package:smart_hydroponic/services/rtdb_service.dart';
-import 'package:smart_hydroponic/widgets/control_card.dart';
-import 'package:smart_hydroponic/widgets/sensor_card.dart';
+import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
+import 'package:smart_hydroponic/data/services/auth_service.dart';
+import 'package:smart_hydroponic/data/services/rtdb_service.dart';
+import 'package:smart_hydroponic/presentation/widgets/control_card.dart';
+import 'package:smart_hydroponic/presentation/widgets/sensor_card.dart';
 
 class Dashboard extends StatefulWidget {
   final NotchBottomBarController? controller;
