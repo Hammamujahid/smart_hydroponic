@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
 import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
 
@@ -35,6 +36,7 @@ class _QrScannerState extends ConsumerState<QrScanner> {
         ElevatedButton(
             onPressed: () async {
               final deviceId = value.displayValue!;
+              final userId = (AuthService().uid).toString();
 
               final device =
                   await ref.read(deviceProvider).getDeviceById(deviceId);
@@ -48,6 +50,8 @@ class _QrScannerState extends ConsumerState<QrScanner> {
                 print("Device sudah dipair");
                 return;
               }
+
+              await ref.read(deviceProvider).updateDeviceById(userId);
 
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const BottomBar()),

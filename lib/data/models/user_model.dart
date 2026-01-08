@@ -22,7 +22,6 @@ class UserModel {
       userId: doc.id,
       email: doc.data()!['email'],
       username: doc.data()!['username'],
-      deviceId: doc.data()!['deviceId'] ?? '',
       createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
       updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate()
     );
@@ -32,7 +31,6 @@ class UserModel {
     return {
       'email': email,
       'username': username,
-      'deviceId': deviceId,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

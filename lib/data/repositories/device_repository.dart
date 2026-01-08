@@ -19,7 +19,10 @@ class DeviceRepository {
     final doc = await service.getDeviceById(deviceId);
     if (!doc.exists) return null;
 
-    return DeviceModel.fromFirestore(
-        doc.data() as DocumentSnapshot<Map<String, dynamic>>);
+    return DeviceModel.fromFirestore(doc);
+  }
+
+  Future<void> updateDeviceById(DeviceModel device) async {
+    await service.updateDeviceById(device.deviceId, device.toFirestore());
   }
 }

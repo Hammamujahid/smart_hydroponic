@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
+        title: 'Smart Hydroponic',
         theme: ThemeData(useMaterial3: true),
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),

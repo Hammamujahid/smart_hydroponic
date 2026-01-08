@@ -39,7 +39,7 @@ class DeviceProvider extends ChangeNotifier {
     }
 
     selectedDevice = await repository.getDeviceById(id);
-
+    
     if (showLoading) {
       isLoading = false;
       notifyListeners();
@@ -47,4 +47,20 @@ class DeviceProvider extends ChangeNotifier {
 
     return selectedDevice;
   }
+
+  Future<void> updateDeviceById(String userId) async {
+
+  if (selectedDevice == null) return;
+
+  final updated = selectedDevice!.copyWith(
+    userId: userId,
+    updatedAt: DateTime.now(),
+  );
+
+  await repository.updateDeviceById(updated);
+
+  selectedDevice = updated;
+  notifyListeners();
+}
+
 }

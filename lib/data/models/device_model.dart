@@ -15,21 +15,33 @@ class DeviceModel {
     required this.updatedAt,
   });
 
-  factory DeviceModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc){
+  DeviceModel copyWith({
+    String? deviceId,
+    String? userId,
+    String? type,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
     return DeviceModel(
-      deviceId: doc.id,
-      userId: doc.data()!['userId'] ?? '',
-      type: doc.data()!['type'],
-      createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
-      updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate()
+      deviceId: deviceId ?? this.deviceId,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
-  Map<String, dynamic> toFirestore(){
-    return {
-      'userId': userId,
-      'createdAt': Timestamp.fromDate(createdAt)
-    };
+  factory DeviceModel.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
+    return DeviceModel(
+        deviceId: doc.id,
+        userId: doc.data()!['userId'] ?? '',
+        type: doc.data()!['type'],
+        createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
+        updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate());
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {'userId': userId, 'updatedAt': Timestamp.fromDate(updatedAt)};
+  }
 }
