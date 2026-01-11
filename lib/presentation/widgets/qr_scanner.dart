@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
 
 class QrScanner extends ConsumerStatefulWidget {
@@ -34,31 +35,43 @@ class _QrScannerState extends ConsumerState<QrScanner> {
           style: const TextStyle(color: Colors.white),
         ),
         ElevatedButton(
-            onPressed: () async {
-              final deviceId = value.displayValue!;
-              final userId = (AuthService().uid).toString();
+          onPressed: () async {
+            final deviceId = value.displayValue;
+            if (deviceId == null) return;
 
-              final device =
-                  await ref.read(deviceProvider).getDeviceById(deviceId);
+            final userId = AuthService().uid;
+            if (userId == null) return;
 
-              if (device == null) {
-                print("Device tidak ditemukan");
-                return;
-              }
+            final deviceProv = ref.read(deviceProvider);
+            final userProv = ref.read(userProvider);
 
-              if (device.userId != null && device.userId!.isNotEmpty) {
-                print("Device sudah dipair");
-                return;
-              }
+            final device = await deviceProv.getDeviceById(deviceId);
 
-              await ref.read(deviceProvider).updateDeviceById(userId);
+            if (device == null) {
+              debugPrint("Device tidak ditemukan");
+              return;
+            }
 
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const BottomBar()),
-                (_) => false,
-              );
-            },
-            child: const Text("Next")),
+            if (device.userId != null && device.userId!.isNotEmpty) {
+              debugPrint("Device sudah dipair");
+              return;
+            }
+
+            await deviceProv.updateDeviceById(userId);
+
+            await userProv.updateUserById(
+              null,
+              deviceId,
+            );
+
+            if (!mounted) return;
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const BottomBar()),
+              (_) => false,
+            );
+          },
+          child: const Text("Next"),
+        )
       ],
     );
   }

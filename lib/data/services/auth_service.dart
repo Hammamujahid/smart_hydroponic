@@ -20,6 +20,7 @@ class AuthService {
           .set({
         'username': username,
         'email': email,
+        'activeDeviceId': '',
         'createdAt': DateTime.now(),
         'updatedAt': DateTime.now(),
       });

@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+                          // final device = await ref.read(deviceProvider).getDeviceById(deviceId);
             if (snapshot.hasError) {
               return const Text('Something went wrong');
             }
