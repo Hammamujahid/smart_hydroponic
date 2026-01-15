@@ -2,73 +2,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
+  final _auth = FirebaseAuth.instance;
+  final _users = FirebaseFirestore.instance.collection('users');
+
   Future<void> register(
       {required String email,
       required String password,
       required String username}) async {
-    // Registration logic here
-    try {
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    final credential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(credential.user!.uid)
-          .set({
-        'username': username,
-        'email': email,
-        'activeDeviceId': '',
-        'createdAt': DateTime.now(),
-        'updatedAt': DateTime.now(),
-      });
-
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        throw Exception('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        throw Exception('The account already exists for that email.');
-      }
-    } catch (e) {
-      throw Exception('Registration failed: $e');
-    }
+    await _users.doc(credential.user!.uid).set({
+      'username': username,
+      'email': email,
+      'activeDeviceId': '',
+      'createdAt': DateTime.now(),
+      'updatedAt': DateTime.now(),
+    });
   }
 
-  Future<void> login({required String email, required String password}) async {
-    // Login logic here
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        throw Exception('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        throw Exception('Wrong password provided for that user.');
-      }
-    } catch (e) {
-      throw Exception('Login failed: $e');
-    }
+  Future<void> login({required String email, required String password}) {
+    return _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
   }
+
+  Future<void> logout() => _auth.signOut();
 
   // ========== SESSION ==========
-  Future<void> logout() async {
-    // Logout logic here
-    await FirebaseAuth.instance.signOut();
-  }
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-    Stream<User?> get authStateChanges =>
-      FirebaseAuth.instance.authStateChanges();
+  User? get currentUser => _auth.currentUser;
 
-  User? get currentUser =>
-      FirebaseAuth.instance.currentUser;
-
-  bool get isLoggedIn =>
-      FirebaseAuth.instance.currentUser != null;
-
-  String? get uid =>
-      FirebaseAuth.instance.currentUser?.uid;
+  String? get uid => _auth.currentUser?.uid;
 }

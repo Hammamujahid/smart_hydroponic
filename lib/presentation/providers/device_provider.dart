@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:smart_hydroponic/data/models/device_model.dart';
 import 'package:smart_hydroponic/data/repositories/device_repository.dart';
 import 'package:smart_hydroponic/data/services/device_service.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 final deviceProvider = ChangeNotifierProvider<DeviceProvider>((ref) {
   return DeviceProvider(
@@ -19,7 +19,8 @@ class DeviceProvider extends ChangeNotifier {
   DeviceModel? selectedDevice;
   bool isLoading = false;
 
-  Future<List<DeviceModel>> getDevices() async {
+  // ===== READ ALL =====
+  Future<void> fetchDevices() async {
     isLoading = true;
     notifyListeners();
 
@@ -27,19 +28,20 @@ class DeviceProvider extends ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
-
-    return devices.toList();
   }
 
-  Future<DeviceModel?> getDeviceById(String id,
-      {bool showLoading = true}) async {
+  // ===== READ ONE =====
+  Future<DeviceModel?> fetchDeviceById(
+    String deviceId, {
+    bool showLoading = true,
+  }) async {
     if (showLoading) {
       isLoading = true;
       notifyListeners();
     }
 
-    selectedDevice = await repository.getDeviceById(id);
-    
+    selectedDevice = await repository.getDeviceById(deviceId);
+
     if (showLoading) {
       isLoading = false;
       notifyListeners();
@@ -48,19 +50,17 @@ class DeviceProvider extends ChangeNotifier {
     return selectedDevice;
   }
 
-  Future<void> updateDeviceById(String userId) async {
+  // ===== UPDATE (NON-PAIRING) =====
+  Future<void> updateDevice(DeviceModel device) async {
+    await repository.updateDeviceById(device);
+    selectedDevice = device;
+    notifyListeners();
+  }
 
-  if (selectedDevice == null) return;
-
-  final updated = selectedDevice!.copyWith(
-    userId: userId,
-    updatedAt: DateTime.now(),
-  );
-
-  await repository.updateDeviceById(updated);
-
-  selectedDevice = updated;
-  notifyListeners();
-}
-
+  void reset() {
+    devices = [];
+    selectedDevice = null;
+    isLoading = false;
+    notifyListeners();
+  }
 }

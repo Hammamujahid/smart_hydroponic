@@ -1,19 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DeviceService {
-  final devices = FirebaseFirestore.instance.collection('devices');
+  final _devices = FirebaseFirestore.instance.collection('devices');
 
-  // ========== READ ==========
-  Future<List<QueryDocumentSnapshot>> getDevices() async {
-    final snapshot = await devices.get();
-    return snapshot.docs;
+  Future<DocumentSnapshot<Map<String, dynamic>>> getDeviceById(
+      String deviceId) {
+    return _devices.doc(deviceId).get();
   }
 
-  Future<DocumentSnapshot<Map<String,dynamic>>> getDeviceById(String deviceId) async {
-    return await devices.doc(deviceId).get();
+  Future<QuerySnapshot<Map<String, dynamic>>> getDevices() {
+    return _devices.get();
   }
 
-  Future<void> updateDeviceById(String deviceId, Map<String, dynamic> data) async{
-    await devices.doc(deviceId).update(data);
+  Future<void> updateDeviceById(String deviceId, Map<String, dynamic> data) {
+    return _devices.doc(deviceId).update(data);
   }
 }

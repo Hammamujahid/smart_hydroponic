@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
+import 'package:smart_hydroponic/presentation/screens/auth/authgate.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/register.dart';
-import 'package:smart_hydroponic/presentation/screens/pairing.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +14,7 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -24,20 +25,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthProvider>(authProvider, (prev, next) {
-      if (next.status == AuthStatus.success) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PairingScreen()),
-        );
-      }
-
-      if (next.status == AuthStatus.error && next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage!)),
-        );
-      }
-    });
     var screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -143,29 +130,56 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            ref.read(authProvider).login(
-                                  email: _emailController.text.trim(),
-                                  password: _passwordController.text.trim(),
-                                );
-                          },
+                          onTap: _loading
+                              ? null
+                              : () async {
+                                  setState(() => _loading = true);
+
+                                  try {
+                                    await ref.read(authProvider).login(
+                                          email: _emailController.text.trim(),
+                                          password:
+                                              _passwordController.text.trim(),
+                                        );
+
+                                    Navigator.pushAndRemoveUntil(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const AuthGate()),
+                                      (route) => false,
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())),
+                                    );
+                                  } finally {
+                                    setState(() => _loading = false);
+                                  }
+                                },
                           child: Container(
                             margin: const EdgeInsets.only(top: 30),
                             width: screenWidth,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF41877F),
+                              color: _loading
+                                  ? Colors.grey
+                                  : const Color(0xFF41877F),
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Center(
-                              child: Text(
-                                "Login",
-                                style: TextStyle(
-                                    fontFamily: "PlusJakartaSans",
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFF1F5F9)),
-                              ),
+                            child: Center(
+                              child: _loading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : const Text(
+                                      "Login",
+                                      style: TextStyle(
+                                        fontFamily: "PlusJakartaSans",
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFF1F5F9),
+                                      ),
+                                    ),
                             ),
                           ),
                         ),

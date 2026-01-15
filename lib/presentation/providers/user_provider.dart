@@ -18,17 +18,39 @@ class UserProvider extends ChangeNotifier {
   UserModel? selectedUser;
   bool isLoading = false;
 
-  Future<void> updateUserById(String? username, String activeDeviceId) async {
+  // ===== READ =====
+  Future<void> getUserById(String uid) async {
+    isLoading = true;
+    notifyListeners();
+
+    selectedUser = await repository.getUserById(uid);
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  // ===== UPDATE PROFILE =====
+  Future<void> updateUseById({
+    String? username,
+    String? activeDeviceId,
+  }) async {
     if (selectedUser == null) return;
 
     final updated = selectedUser!.copyWith(
-        username: username,
-        activeDeviceId: activeDeviceId,
-        updatedAt: DateTime.now());
+      username: username ?? selectedUser!.username,
+      activeDeviceId: activeDeviceId ?? selectedUser!.activeDeviceId,
+      updatedAt: DateTime.now(),
+    );
 
     await repository.updateUserById(updated);
 
     selectedUser = updated;
+    notifyListeners();
+  }
+
+  void reset() {
+    selectedUser = null;
+    isLoading = false;
     notifyListeners();
   }
 }

@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:smart_hydroponic/data/services/auth_service.dart';
-import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
-import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
-import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
+import 'package:smart_hydroponic/presentation/providers/pairing_provider.dart';
 
 class QrScanner extends ConsumerStatefulWidget {
-  /// Constructor for simple Mobile Scanner example
   const QrScanner({super.key});
 
   @override
@@ -16,78 +12,53 @@ class QrScanner extends ConsumerStatefulWidget {
 
 class _QrScannerState extends ConsumerState<QrScanner> {
   Barcode? _barcode;
+  bool _listened = false;
+  bool _hasPaired = false;
 
-  Widget _barcodePreview(Barcode? value) {
-    if (value == null) {
+  void _handleBarcode(BarcodeCapture capture) {
+    final barcode = capture.barcodes.firstOrNull;
+    if (barcode?.displayValue == null) return;
+
+    setState(() {
+      _barcode = barcode;
+    });
+  }
+
+  Widget _barcodePreview(Barcode? barcode) {
+    if (barcode == null) {
       return const Text(
-        'Scan something!',
-        overflow: TextOverflow.fade,
+        "Scan QR Device",
         style: TextStyle(color: Colors.white),
       );
     }
 
-    return Column(
-      spacing: 10,
-      children: [
-        Text(
-          'Device Id: ${value.displayValue}',
-          overflow: TextOverflow.fade,
-          style: const TextStyle(color: Colors.white),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            final deviceId = value.displayValue;
-            if (deviceId == null) return;
-
-            final userId = AuthService().uid;
-            if (userId == null) return;
-
-            final deviceProv = ref.read(deviceProvider);
-            final userProv = ref.read(userProvider);
-
-            final device = await deviceProv.getDeviceById(deviceId);
-
-            if (device == null) {
-              debugPrint("Device tidak ditemukan");
-              return;
-            }
-
-            if (device.userId != null && device.userId!.isNotEmpty) {
-              debugPrint("Device sudah dipair");
-              return;
-            }
-
-            await deviceProv.updateDeviceById(userId);
-
-            await userProv.updateUserById(
-              null,
-              deviceId,
-            );
-
-            if (!mounted) return;
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const BottomBar()),
-              (_) => false,
-            );
-          },
-          child: const Text("Next"),
-        )
-      ],
+    return ElevatedButton(
+      onPressed: () {
+        ref.read(pairingProvider).pair(barcode.displayValue!);
+      },
+      child: const Text("Pair Device"),
     );
-  }
-
-  void _handleBarcode(BarcodeCapture barcodes) {
-    if (mounted) {
-      setState(() {
-        _barcode = barcodes.barcodes.firstOrNull;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_listened) {
+      _listened = true;
+      ref.listen<PairingProvider>(pairingProvider, (prev, next) {
+        if (next.status == PairingStatus.success && !_hasPaired) {
+          _hasPaired = true;
+          Navigator.pop(context);
+        }
+
+        if (next.status == PairingStatus.error && next.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(next.errorMessage!)),
+          );
+        }
+      });
+    }
     return Scaffold(
-      appBar: AppBar(title: const Text('Simple Mobile Scanner')),
+      appBar: AppBar(title: const Text('Scan QR Device')),
       backgroundColor: Colors.black,
       body: Stack(
         children: [
@@ -95,14 +66,10 @@ class _QrScannerState extends ConsumerState<QrScanner> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 100,
-              color: const Color.fromRGBO(0, 0, 0, 0.4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(child: Center(child: _barcodePreview(_barcode))),
-                ],
+              height: 120,
+              color: Colors.black54,
+              child: Center(
+                child: _barcodePreview(_barcode),
               ),
             ),
           ),

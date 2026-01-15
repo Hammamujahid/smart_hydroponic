@@ -15,6 +15,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -27,22 +28,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthProvider>(authProvider, (prev, next) {
-      if (next.status == AuthStatus.success) {
-        ref.read(authProvider).reset();
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-        );
-      }
-
-      if (next.status == AuthStatus.error && next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage!)),
-        );
-      }
-    });
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         backgroundColor: const Color(0xFF41877F),
@@ -179,32 +164,69 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               ),
                             )),
                         GestureDetector(
-                          onTap: () {
-                            ref.read(authProvider).register(
-                                  email: _emailController.text.trim(),
-                                  password: _passwordController.text.trim(),
-                                  confirmPassword:
-                                      _confirmPasswordController.text.trim(),
-                                  username: _usernameController.text.trim(),
-                                );
-                          },
+                          onTap: _loading
+                              ? null
+                              : () async {
+                                  if (_passwordController.text.trim() !=
+                                      _confirmPasswordController.text.trim()) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            "Password dan konfirmasi tidak sama"),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  setState(() => _loading = true);
+
+                                  try {
+                                    await ref.read(authProvider).register(
+                                          email: _emailController.text.trim(),
+                                          password:
+                                              _passwordController.text.trim(),
+                                          username:
+                                              _usernameController.text.trim(),
+                                        );
+
+                                    Navigator.pushAndRemoveUntil(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const LoginPage()),
+                                      (route) => false,
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())),
+                                    );
+                                  } finally {
+                                    setState(() => _loading = false);
+                                  }
+                                },
                           child: Container(
                             margin: const EdgeInsets.only(top: 30),
                             width: screenWidth,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF41877F),
+                              color: _loading
+                                  ? Colors.grey
+                                  : const Color(0xFF41877F),
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Center(
-                              child: Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                    fontFamily: "PlusJakartaSans",
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFF1F5F9)),
-                              ),
+                            child: Center(
+                              child: _loading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : const Text(
+                                      "Sign Up",
+                                      style: TextStyle(
+                                        fontFamily: "PlusJakartaSans",
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFF1F5F9),
+                                      ),
+                                    ),
                             ),
                           ),
                         ),

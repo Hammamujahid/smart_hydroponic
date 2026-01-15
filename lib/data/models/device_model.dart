@@ -35,13 +35,13 @@ class DeviceModel {
       DocumentSnapshot<Map<String, dynamic>> doc) {
     return DeviceModel(
         deviceId: doc.id,
-        userId: doc.data()!['userId'] ?? '',
+        userId: doc.data()!['userId'] as String?,
         type: doc.data()!['type'],
         createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
         updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate());
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toUpdateFirestore() {
     return {'userId': userId, 'updatedAt': Timestamp.fromDate(updatedAt)};
   }
 }

@@ -1,57 +1,36 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/dashboard_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
-import 'package:smart_hydroponic/data/services/auth_service.dart';
-import 'package:smart_hydroponic/data/services/rtdb_service.dart';
 import 'package:smart_hydroponic/presentation/widgets/control_card.dart';
 import 'package:smart_hydroponic/presentation/widgets/sensor_card.dart';
 
-class Dashboard extends StatefulWidget {
+class Dashboard extends ConsumerStatefulWidget {
   final NotchBottomBarController? controller;
-
   const Dashboard({super.key, this.controller});
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  ConsumerState<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  bool isOnline = true;
-  final ValueNotifier<String> controllerMode = ValueNotifier<String>("manual");
-  final ValueNotifier<bool> waterController = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> nutrientController = ValueNotifier<bool>(false);
-  final ValueNotifier<double> nutrientLevel = ValueNotifier<double>(0.0);
-
-  @override
-  void dispose() {
-    controllerMode.dispose();
-    waterController.dispose();
-    nutrientController.dispose();
-    nutrientLevel.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    RTDBService.getAutoModeStream().listen((value) {
-      controllerMode.value = value;
-    });
-    RTDBService.getWaterControllerStream().listen((value) {
-      waterController.value = value;
-    });
-    RTDBService.getNutrientControllerStream().listen((value) {
-      nutrientController.value = value;
-    });
-    RTDBService.getNutrientSensorStream().listen((value) {
-      nutrientLevel.value = value;
-    });
-  }
-
+class _DashboardState extends ConsumerState<Dashboard> {
   @override
   Widget build(BuildContext context) {
+    final userState = ref.watch(userProvider);
+    final dashboard = ref.watch(dashboardProvider);
+
+    if (userState.isLoading || userState.selectedUser == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final activeDeviceId = userState.selectedUser!.activeDeviceId;
+
     return Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
@@ -95,13 +74,15 @@ class _DashboardState extends State<Dashboard> {
                 padding: const EdgeInsets.only(right: 16),
                 child: GestureDetector(
                   onTap: () async {
-                    try {
-                      AuthService().logout();
-                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LoginPage()), (_) => false);
-                    } catch (e) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(e.toString())));
-                    }
+                    await ref.read(authProvider).logout();
+                    ref.read(userProvider).reset();
+
+                    Navigator.pushAndRemoveUntil(
+                      // ignore: use_build_context_synchronously
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
                   },
                   child: const CircleAvatar(
                     backgroundColor: Color(0xFFE0F2FE),
@@ -110,17 +91,27 @@ class _DashboardState extends State<Dashboard> {
                 ))
           ],
         ),
-        body: CustomScrollView(
-          slivers: [
-            _buildLiveStatusTitle(),
-            _buildLiveStatus(),
-            _buildDeviceControlTitle(),
-            _buildDeviceControl(),
-          ],
-        ));
+        body: (activeDeviceId == null || activeDeviceId.isEmpty)
+            ? const Center(
+                child: Text(
+                  "Pairing First",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            : CustomScrollView(
+                slivers: [
+                  _buildLiveStatusTitle(dashboard),
+                  _buildLiveStatus(dashboard),
+                  _buildDeviceControlTitle(),
+                  _buildDeviceControl(ref, dashboard),
+                ],
+              ));
   }
 
-  SliverToBoxAdapter _buildLiveStatusTitle() {
+  SliverToBoxAdapter _buildLiveStatusTitle(DashboardProvider d) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -140,7 +131,7 @@ class _DashboardState extends State<Dashboard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  isOnline == true
+                  d.isOnline == true
                       ? const Icon(
                           Icons.circle,
                           color: Color(0xFF059669),
@@ -154,7 +145,7 @@ class _DashboardState extends State<Dashboard> {
                   const SizedBox(
                     width: 5,
                   ),
-                  isOnline == true
+                  d.isOnline == true
                       ? const Text(
                           "System Online",
                           style: TextStyle(
@@ -180,7 +171,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  SliverPadding _buildLiveStatus() {
+  SliverPadding _buildLiveStatus(DashboardProvider d) {
     return SliverPadding(
         padding: const EdgeInsets.fromLTRB(20, 15, 20, 0),
         sliver: SliverGrid(
@@ -194,7 +185,7 @@ class _DashboardState extends State<Dashboard> {
               [
                 SensorCard(
                   title: 'Nutrient Level',
-                  value: nutrientLevel.value.toString(),
+                  value: d.nutrientLevel.toString(),
                   unit: 'ppm',
                   status: 'Normal',
                   bgStatusColor: const Color(0xFFF4DCFC),
@@ -202,25 +193,25 @@ class _DashboardState extends State<Dashboard> {
                   bgIconColor: const Color.fromARGB(20, 78, 13, 84),
                   statusColor: const Color(0xFFA6009B),
                 ),
-                const SensorCard(
+                SensorCard(
                   title: 'pH Level',
-                  value: "",
+                  value: d.phLevel.toString(),
                   unit: 'pH',
                   status: 'Normal',
-                  bgStatusColor: Color(0xFFFEF3C6),
+                  bgStatusColor: const Color(0xFFFEF3C6),
                   iconPath: 'assets/images/ph.png',
-                  bgIconColor: Color.fromARGB(20, 123, 51, 6),
-                  statusColor: Color(0xFFBB4D00),
+                  bgIconColor: const Color.fromARGB(20, 123, 51, 6),
+                  statusColor: const Color(0xFFBB4D00),
                 ),
-                const SensorCard(
+                SensorCard(
                   title: 'Water Level',
-                  value: "",
+                  value: d.waterLevel.toString(),
                   unit: '%',
                   status: 'Low',
-                  bgStatusColor: Color(0xFFE2EBFF),
+                  bgStatusColor: const Color(0xFFE2EBFF),
                   iconPath: 'assets/images/water.png',
-                  bgIconColor: Color.fromARGB(20, 2, 73, 112),
-                  statusColor: Color(0xFF155DFC),
+                  bgIconColor: const Color.fromARGB(20, 2, 73, 112),
+                  statusColor: const Color(0xFF155DFC),
                 ),
               ],
             )));
@@ -258,7 +249,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  SliverToBoxAdapter _buildDeviceControl() {
+  SliverToBoxAdapter _buildDeviceControl(WidgetRef ref, DashboardProvider d) {
     return SliverToBoxAdapter(
         child: Padding(
       padding: const EdgeInsetsGeometry.fromLTRB(20, 15, 20, 120),
@@ -268,7 +259,7 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AnimatedToggleSwitch<String>.size(
-              current: controllerMode.value,
+              current: d.controllerMode.value,
               values: const ["manual", "auto"],
               iconOpacity: 0.2,
               indicatorSize: Size(fullWidth / 2, 42),
@@ -296,47 +287,38 @@ class _DashboardState extends State<Dashboard> {
                     )
                   ]),
               selectedIconScale: 1.0,
-              onChanged: (value) => setState(() {
-                controllerMode.value = value;
-                RTDBService.setAutoMode(value);
-                if (value == "auto") {
-                  RTDBService.setWaterController(false);
-                  RTDBService.setNutrientController(false);
-                }
-              }),
+              onChanged: (value) {
+                ref.read(dashboardProvider).setMode(value);
+              },
             ),
             const SizedBox(
               height: 5,
             ),
             ValueListenableBuilder<String>(
-                valueListenable: controllerMode,
+                valueListenable: d.controllerMode,
                 builder: (_, value, __) {
                   return value == "manual"
                       ? Column(children: [
                           ControlCard(
-                              title: "Water Pump",
-                              isActive: waterController.value,
-                              uptime: "",
-                              iconPath: "assets/images/water.png",
-                              bgIconColor: const Color(0xFFEFF6FF),
-                              onToggle: (value) {
-                                setState(() {
-                                  waterController.value = value;
-                                  RTDBService.setWaterController(value);
-                                });
-                              }),
+                            title: "Water Pump",
+                            isActive: d.waterController.value,
+                            uptime: "",
+                            iconPath: "assets/images/water.png",
+                            bgIconColor: const Color(0xFFEFF6FF),
+                            onToggle: (value) {
+                              ref.read(dashboardProvider).setWater(value);
+                            },
+                          ),
                           ControlCard(
-                              title: "Nutrient Pump",
-                              isActive: nutrientController.value,
-                              uptime: "",
-                              iconPath: "assets/images/nutrient.png",
-                              bgIconColor: const Color(0xFFFBEFFF),
-                              onToggle: (value) {
-                                setState(() {
-                                  nutrientController.value = value;
-                                  RTDBService.setNutrientController(value);
-                                });
-                              })
+                            title: "Nutrient Pump",
+                            isActive: d.nutrientController.value,
+                            uptime: "",
+                            iconPath: "assets/images/nutrient.png",
+                            bgIconColor: const Color(0xFFFBEFFF),
+                            onToggle: (value) {
+                              ref.read(dashboardProvider).setNutrient(value);
+                            },
+                          )
                         ])
                       : const Center(
                           child: Text("Auto"),
