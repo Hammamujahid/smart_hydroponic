@@ -21,13 +21,13 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     final auth = ref.watch(authProvider);
     final userProv = ref.watch(userProvider);
 
-    // ⛔ TUNGGU SAMPAI UID ADA
+    // BELUM LOGIN → LOGIN
     if (auth.uid == null) {
       _fetched = false;
       return const LoginPage();
     }
 
-    // FETCH USER SEKALI
+    // FETCH USER SEKALI (SIDE EFFECT)
     if (!_fetched) {
       _fetched = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,23 +35,16 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       });
     }
 
-    if (userProv.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    // JIKA USER BELUM TERLOAD → TETAP LANJUT
+    final user = userProv.selectedUser;
 
-    if (userProv.selectedUser == null) {
-      return const Scaffold(
-        body: Center(child: Text("User data not found")),
-      );
-    }
-
-    final deviceId = userProv.selectedUser!.activeDeviceId;
+    // BELUM ADA USER ATAU BELUM PAIRING → PAIRING
+    final deviceId = user?.activeDeviceId;
     if (deviceId == null || deviceId.isEmpty) {
       return const PairingScreen();
     }
 
+    // SUDAH LOGIN + SUDAH PAIRING → APP
     return const BottomBar();
   }
 }

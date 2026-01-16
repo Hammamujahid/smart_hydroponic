@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_hydroponic/presentation/providers/pairing_provider.dart';
+import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
 
 class QrScanner extends ConsumerStatefulWidget {
   const QrScanner({super.key});
@@ -32,11 +33,21 @@ class _QrScannerState extends ConsumerState<QrScanner> {
       );
     }
 
-    return ElevatedButton(
-      onPressed: () {
-        ref.read(pairingProvider).pair(barcode.displayValue!);
-      },
-      child: const Text("Pair Device"),
+    return Column(
+      spacing: 10,
+      children: [
+        Text(
+          'Device Id: ${barcode.displayValue}',
+          overflow: TextOverflow.fade,
+          style: const TextStyle(color: Colors.white),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            ref.read(pairingProvider).pair(barcode.displayValue!);
+          },
+          child: const Text("Next"),
+        )
+      ],
     );
   }
 
@@ -57,6 +68,21 @@ class _QrScannerState extends ConsumerState<QrScanner> {
         }
       });
     }
+    ref.listen<PairingProvider>(pairingProvider, (prev, next) {
+      if (next.status == PairingStatus.success) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const BottomBar()),
+          (route) => false,
+        );
+      }
+
+      if (next.status == PairingStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.errorMessage ?? 'Pairing gagal')),
+        );
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: const Text('Scan QR Device')),
       backgroundColor: Colors.black,

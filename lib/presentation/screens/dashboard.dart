@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/dashboard_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
@@ -19,17 +20,31 @@ class Dashboard extends ConsumerStatefulWidget {
 
 class _DashboardState extends ConsumerState<Dashboard> {
   @override
-  Widget build(BuildContext context) {
-    final userState = ref.watch(userProvider);
-    final dashboard = ref.watch(dashboardProvider);
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final uid = AuthService().uid;
+      if (uid != null) {
+        ref.read(userProvider).getUserById(uid);
+      }
+    });
+  }
 
-    if (userState.isLoading || userState.selectedUser == null) {
+  @override
+  Widget build(BuildContext context) {
+    final userProv = ref.watch(userProvider);
+    final dashboard = ref.watch(dashboardProvider);
+    final activeDeviceId = userProv.selectedUser?.activeDeviceId;
+
+    if (activeDeviceId != null && activeDeviceId.isNotEmpty) {
+      ref.read(dashboardProvider).init(activeDeviceId);
+    }
+
+    if (userProv.isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final activeDeviceId = userState.selectedUser!.activeDeviceId;
 
     return Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
@@ -183,35 +198,50 @@ class _DashboardState extends ConsumerState<Dashboard> {
             ),
             delegate: SliverChildListDelegate.fixed(
               [
-                SensorCard(
-                  title: 'Nutrient Level',
-                  value: d.nutrientLevel.toString(),
-                  unit: 'ppm',
-                  status: 'Normal',
-                  bgStatusColor: const Color(0xFFF4DCFC),
-                  iconPath: 'assets/images/nutrient.png',
-                  bgIconColor: const Color.fromARGB(20, 78, 13, 84),
-                  statusColor: const Color(0xFFA6009B),
+                ValueListenableBuilder<double>(
+                  valueListenable: d.nutrientLevel,
+                  builder: (_, value, __) {
+                    return SensorCard(
+                      title: 'Nutrient Level',
+                      value: value.toStringAsFixed(1),
+                      unit: 'ppm',
+                      status: 'Normal',
+                      bgStatusColor: const Color(0xFFF4DCFC),
+                      iconPath: 'assets/images/nutrient.png',
+                      bgIconColor: const Color.fromARGB(20, 78, 13, 84),
+                      statusColor: const Color(0xFFA6009B),
+                    );
+                  },
                 ),
-                SensorCard(
-                  title: 'pH Level',
-                  value: d.phLevel.toString(),
-                  unit: 'pH',
-                  status: 'Normal',
-                  bgStatusColor: const Color(0xFFFEF3C6),
-                  iconPath: 'assets/images/ph.png',
-                  bgIconColor: const Color.fromARGB(20, 123, 51, 6),
-                  statusColor: const Color(0xFFBB4D00),
+                ValueListenableBuilder<double>(
+                  valueListenable: d.phLevel,
+                  builder: (_, value, __) {
+                    return SensorCard(
+                      title: 'pH Level',
+                      value: value.toStringAsFixed(2),
+                      unit: 'pH',
+                      status: 'Normal',
+                      bgStatusColor: const Color(0xFFFEF3C6),
+                      iconPath: 'assets/images/ph.png',
+                      bgIconColor: const Color.fromARGB(20, 123, 51, 6),
+                      statusColor: const Color(0xFFBB4D00),
+                    );
+                  },
                 ),
-                SensorCard(
-                  title: 'Water Level',
-                  value: d.waterLevel.toString(),
-                  unit: '%',
-                  status: 'Low',
-                  bgStatusColor: const Color(0xFFE2EBFF),
-                  iconPath: 'assets/images/water.png',
-                  bgIconColor: const Color.fromARGB(20, 2, 73, 112),
-                  statusColor: const Color(0xFF155DFC),
+                ValueListenableBuilder<double>(
+                  valueListenable: d.waterLevel,
+                  builder: (_, value, __) {
+                    return SensorCard(
+                      title: 'Water Level',
+                      value: value.toStringAsFixed(0),
+                      unit: '%',
+                      status: value < 30 ? 'Low' : 'Normal',
+                      bgStatusColor: const Color(0xFFE2EBFF),
+                      iconPath: 'assets/images/water.png',
+                      bgIconColor: const Color.fromARGB(20, 2, 73, 112),
+                      statusColor: const Color(0xFF155DFC),
+                    );
+                  },
                 ),
               ],
             )));
@@ -258,39 +288,43 @@ class _DashboardState extends ConsumerState<Dashboard> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedToggleSwitch<String>.size(
-              current: d.controllerMode.value,
-              values: const ["manual", "auto"],
-              iconOpacity: 0.2,
-              indicatorSize: Size(fullWidth / 2, 42),
-              customIconBuilder: (context, local, global) => Text(
-                local.value == "auto" ? "Auto" : "Manual",
-                style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontFamily: "PlusJakartaSans",
-                    fontWeight: FontWeight.w600),
-              ),
-              borderWidth: 5.0,
-              iconAnimationType: AnimationType.onHover,
-              style: ToggleStyle(
-                  backgroundColor: Colors.white,
-                  indicatorColor: const Color(0xFF059669),
-                  borderColor: Colors.transparent,
-                  borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
-                    const BoxShadow(
-                      color: Color(0xFFE2E8F0),
-                      spreadRadius: 0.5,
-                      blurRadius: 1,
-                      offset: Offset(0, 3),
-                    )
-                  ]),
-              selectedIconScale: 1.0,
-              onChanged: (value) {
-                ref.read(dashboardProvider).setMode(value);
-              },
-            ),
+            ValueListenableBuilder<String>(
+                valueListenable: d.controllerMode,
+                builder: (_, mode, __) {
+                  return AnimatedToggleSwitch<String>.size(
+                    current: mode,
+                    values: const ["manual", "auto"],
+                    iconOpacity: 0.2,
+                    indicatorSize: Size(fullWidth / 2, 42),
+                    customIconBuilder: (context, local, global) => Text(
+                      local.value == "auto" ? "Auto" : "Manual",
+                      style: const TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontSize: 14,
+                          fontFamily: "PlusJakartaSans",
+                          fontWeight: FontWeight.w600),
+                    ),
+                    borderWidth: 5.0,
+                    iconAnimationType: AnimationType.onHover,
+                    style: ToggleStyle(
+                        backgroundColor: Colors.white,
+                        indicatorColor: const Color(0xFF059669),
+                        borderColor: Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          const BoxShadow(
+                            color: Color(0xFFE2E8F0),
+                            spreadRadius: 0.5,
+                            blurRadius: 1,
+                            offset: Offset(0, 3),
+                          )
+                        ]),
+                    selectedIconScale: 1.0,
+                    onChanged: (value) {
+                      ref.read(dashboardProvider).setMode(value);
+                    },
+                  );
+                }),
             const SizedBox(
               height: 5,
             ),
@@ -299,26 +333,38 @@ class _DashboardState extends ConsumerState<Dashboard> {
                 builder: (_, value, __) {
                   return value == "manual"
                       ? Column(children: [
-                          ControlCard(
-                            title: "Water Pump",
-                            isActive: d.waterController.value,
-                            uptime: "",
-                            iconPath: "assets/images/water.png",
-                            bgIconColor: const Color(0xFFEFF6FF),
-                            onToggle: (value) {
-                              ref.read(dashboardProvider).setWater(value);
+                          ValueListenableBuilder<bool>(
+                            valueListenable: d.waterController,
+                            builder: (_, isActive, __) {
+                              return ControlCard(
+                                title: "Water Pump",
+                                isActive: isActive,
+                                uptime: "",
+                                iconPath: "assets/images/water.png",
+                                bgIconColor: const Color(0xFFEFF6FF),
+                                onToggle: (value) {
+                                  ref.read(dashboardProvider).setWater(value);
+                                },
+                              );
                             },
                           ),
-                          ControlCard(
-                            title: "Nutrient Pump",
-                            isActive: d.nutrientController.value,
-                            uptime: "",
-                            iconPath: "assets/images/nutrient.png",
-                            bgIconColor: const Color(0xFFFBEFFF),
-                            onToggle: (value) {
-                              ref.read(dashboardProvider).setNutrient(value);
+                          ValueListenableBuilder<bool>(
+                            valueListenable: d.nutrientController,
+                            builder: (_, isActive, __) {
+                              return ControlCard(
+                                title: "Nutrient Pump",
+                                isActive: isActive,
+                                uptime: "",
+                                iconPath: "assets/images/nutrient.png",
+                                bgIconColor: const Color(0xFFFBEFFF),
+                                onToggle: (value) {
+                                  ref
+                                      .read(dashboardProvider)
+                                      .setNutrient(value);
+                                },
+                              );
                             },
-                          )
+                          ),
                         ])
                       : const Center(
                           child: Text("Auto"),

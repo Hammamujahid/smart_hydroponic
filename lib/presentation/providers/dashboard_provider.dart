@@ -9,7 +9,9 @@ final dashboardProvider =
 
 class DashboardProvider extends ChangeNotifier {
   RTDBService? _rtdb;
-  bool _initialized = false;
+  String? _deviceId;
+
+  bool get isInitialized => _rtdb != null;
 
   // ===== STATE (PAKAI ValueNotifier SESUAI UI) =====
   final ValueNotifier<String> controllerMode =
@@ -29,9 +31,14 @@ class DashboardProvider extends ChangeNotifier {
 
   // ===== INIT RTDB =====
   void init(String deviceId) {
-    if (_initialized) return;
-    _initialized = true;
+    if (_rtdb != null && _deviceId == deviceId) {
+      debugPrint("RTDB already initialized for $deviceId");
+      return;
+    }
 
+    debugPrint("RTDB INIT for $deviceId");
+
+    _deviceId = deviceId;
     _rtdb = RTDBService(deviceId);
 
     _rtdb!.getAutoModeStream().listen((v) {
