@@ -2,12 +2,11 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/dashboard_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
-import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
 import 'package:smart_hydroponic/presentation/widgets/control_card.dart';
+import 'package:smart_hydroponic/presentation/widgets/qr_scanner.dart';
 import 'package:smart_hydroponic/presentation/widgets/sensor_card.dart';
 
 class Dashboard extends ConsumerStatefulWidget {
@@ -19,32 +18,23 @@ class Dashboard extends ConsumerStatefulWidget {
 }
 
 class _DashboardState extends ConsumerState<Dashboard> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final uid = AuthService().uid;
-      if (uid != null) {
-        ref.read(userProvider).getUserById(uid);
-      }
-    });
-  }
+  bool _initialized = false;
 
   @override
   Widget build(BuildContext context) {
     final userProv = ref.watch(userProvider);
     final dashboard = ref.watch(dashboardProvider);
-    final activeDeviceId = userProv.selectedUser?.activeDeviceId;
+    final deviceId = userProv.selectedUser?.activeDeviceId;
 
-    if (activeDeviceId != null && activeDeviceId.isNotEmpty) {
-      ref.read(dashboardProvider).init(activeDeviceId);
-    }
-
-    if (userProv.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initialized = true;
+      if (deviceId != null && deviceId.isNotEmpty) {
+        ref.read(dashboardProvider).init(deviceId);
+      } else {
+        ref.read(dashboardProvider).disposeRTDB();
+      }
+      debugPrint("DASHBOARD INIT → $deviceId");
+    });
 
     return Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
@@ -89,15 +79,9 @@ class _DashboardState extends ConsumerState<Dashboard> {
                 padding: const EdgeInsets.only(right: 16),
                 child: GestureDetector(
                   onTap: () async {
-                    await ref.read(authProvider).logout();
+                    ref.read(dashboardProvider).disposeRTDB();
                     ref.read(userProvider).reset();
-
-                    Navigator.pushAndRemoveUntil(
-                      // ignore: use_build_context_synchronously
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                      (route) => false,
-                    );
+                    await ref.read(authProvider).logout();
                   },
                   child: const CircleAvatar(
                     backgroundColor: Color(0xFFE0F2FE),
@@ -106,16 +90,8 @@ class _DashboardState extends ConsumerState<Dashboard> {
                 ))
           ],
         ),
-        body: (activeDeviceId == null || activeDeviceId.isEmpty)
-            ? const Center(
-                child: Text(
-                  "Pairing First",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )
+        body: (deviceId == null || deviceId.isEmpty)
+            ? _buildPairingPlaceholder(context)
             : CustomScrollView(
                 slivers: [
                   _buildLiveStatusTitle(dashboard),
@@ -124,6 +100,95 @@ class _DashboardState extends ConsumerState<Dashboard> {
                   _buildDeviceControl(ref, dashboard),
                 ],
               ));
+  }
+
+  Widget _buildPairingPlaceholder(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 10,
+                children: [
+                  const Text(
+                    "Pair Your Controller",
+                    style: TextStyle(
+                        fontFamily: "PlusJakartaSans",
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A)),
+                  ),
+                  const SizedBox(
+                    height: 50,
+                  ),
+                  Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF41877F),
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/scanning_qr.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const QrScanner(),
+                          ));
+                    },
+                    child: Container(
+                      width: screenWidth / 2,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF41877F),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0xFFE2E8F0),
+                            spreadRadius: 0.5,
+                            blurRadius: 1,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Scan Now",
+                          style: TextStyle(
+                              fontFamily: "PlusJakartaSanz",
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   SliverToBoxAdapter _buildLiveStatusTitle(DashboardProvider d) {

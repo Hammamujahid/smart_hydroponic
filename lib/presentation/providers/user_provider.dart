@@ -19,15 +19,22 @@ class UserProvider extends ChangeNotifier {
   bool isLoading = false;
 
   // ===== READ =====
-  Future<void> getUserById(String uid) async {
-    isLoading = true;
-    notifyListeners();
+Future<void> getUserById(String uid) async {
+  if (uid.isEmpty) return;
 
+  isLoading = true;
+  notifyListeners();
+
+  try {
     selectedUser = await repository.getUserById(uid);
-
-    isLoading = false;
-    notifyListeners();
+  } catch (e) {
+    selectedUser = null;
   }
+
+  isLoading = false;
+  notifyListeners();
+}
+
 
   // ===== UPDATE PROFILE =====
   Future<void> updateUseById({

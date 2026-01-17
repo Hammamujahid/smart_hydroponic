@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
-import 'package:smart_hydroponic/presentation/screens/auth/authgate.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/register.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -141,20 +140,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           password:
                                               _passwordController.text.trim(),
                                         );
-
-                                    Navigator.pushAndRemoveUntil(
-                                      // ignore: use_build_context_synchronously
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const AuthGate()),
-                                      (route) => false,
-                                    );
                                   } catch (e) {
+                                    if (!mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text(e.toString())),
                                     );
                                   } finally {
-                                    setState(() => _loading = false);
+                                    if (mounted) {
+                                      setState(() => _loading = false);
+                                    }
                                   }
                                 },
                           child: Container(

@@ -3,48 +3,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
-import 'package:smart_hydroponic/presentation/screens/pairing.dart';
 import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
 
-class AuthGate extends ConsumerStatefulWidget {
+class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
   @override
-  ConsumerState<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends ConsumerState<AuthGate> {
-  bool _fetched = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     final userProv = ref.watch(userProvider);
 
-    // BELUM LOGIN → LOGIN
-    if (auth.uid == null) {
-      _fetched = false;
-      return const LoginPage();
-    }
-
-    // FETCH USER SEKALI (SIDE EFFECT)
-    if (!_fetched) {
-      _fetched = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(userProvider).getUserById(auth.uid!);
+    // ===== BOOTSTRAP USER (ONLY IF AUTH VALID) =====
+    if (auth.uid != null &&
+        userProv.selectedUser == null &&
+        !userProv.isLoading) {
+      Future.microtask(() {
+        // DOUBLE GUARD
+        final currentUid = ref.read(authProvider).uid;
+        if (currentUid != null) {
+          ref.read(userProvider).getUserById(currentUid);
+        }
       });
     }
 
-    // JIKA USER BELUM TERLOAD → TETAP LANJUT
-    final user = userProv.selectedUser;
-
-    // BELUM ADA USER ATAU BELUM PAIRING → PAIRING
-    final deviceId = user?.activeDeviceId;
-    if (deviceId == null || deviceId.isEmpty) {
-      return const PairingScreen();
+    // ===== UI FLOW =====
+    if (auth.uid == null) {
+      return const LoginPage();
     }
 
-    // SUDAH LOGIN + SUDAH PAIRING → APP
+    if (userProv.selectedUser == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return const BottomBar();
   }
 }

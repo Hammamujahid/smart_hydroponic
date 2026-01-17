@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_hydroponic/presentation/providers/pairing_provider.dart';
-import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
+import 'package:smart_hydroponic/presentation/screens/auth/authgate.dart';
 
 class QrScanner extends ConsumerStatefulWidget {
   const QrScanner({super.key});
@@ -72,7 +72,7 @@ class _QrScannerState extends ConsumerState<QrScanner> {
       if (next.status == PairingStatus.success) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const BottomBar()),
+          MaterialPageRoute(builder: (_) => const AuthGate()),
           (route) => false,
         );
       }
