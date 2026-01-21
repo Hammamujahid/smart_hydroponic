@@ -1,9 +1,7 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
-import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
-import 'package:smart_hydroponic/presentation/providers/dashboard_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/rtdb_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/widgets/control_card.dart';
 import 'package:smart_hydroponic/presentation/widgets/qr_scanner.dart';
@@ -18,20 +16,17 @@ class Dashboard extends ConsumerStatefulWidget {
 }
 
 class _DashboardState extends ConsumerState<Dashboard> {
-  bool _initialized = false;
-
   @override
   Widget build(BuildContext context) {
     final userProv = ref.watch(userProvider);
-    final dashboard = ref.watch(dashboardProvider);
+    final rtdb = ref.watch(rtdbProvider);
     final deviceId = userProv.selectedUser?.activeDeviceId;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initialized = true;
       if (deviceId != null && deviceId.isNotEmpty) {
-        ref.read(dashboardProvider).init(deviceId);
+        ref.read(rtdbProvider).init(deviceId);
       } else {
-        ref.read(dashboardProvider).disposeRTDB();
+        ref.read(rtdbProvider).disposeRTDB();
       }
       debugPrint("DASHBOARD INIT → $deviceId");
     });
@@ -78,14 +73,11 @@ class _DashboardState extends ConsumerState<Dashboard> {
             Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: GestureDetector(
-                  onTap: () async {
-                    ref.read(dashboardProvider).disposeRTDB();
-                    ref.read(userProvider).reset();
-                    await ref.read(authProvider).logout();
-                  },
+                  onTap: () {},
                   child: const CircleAvatar(
-                    backgroundColor: Color(0xFFE0F2FE),
-                    child: Icon(Icons.menu, color: Color(0xFF0284C7)),
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.tap_and_play_rounded,
+                        color: Color(0xFF059669)),
                   ),
                 ))
           ],
@@ -94,10 +86,10 @@ class _DashboardState extends ConsumerState<Dashboard> {
             ? _buildPairingPlaceholder(context)
             : CustomScrollView(
                 slivers: [
-                  _buildLiveStatusTitle(dashboard),
-                  _buildLiveStatus(dashboard),
-                  _buildDeviceControlTitle(),
-                  _buildDeviceControl(ref, dashboard),
+                  _buildLiveStatusTitle(rtdb),
+                  _buildLiveStatus(rtdb),
+                  _buildDeviceControlTitle(rtdb),
+                  _buildDeviceControl(ref, rtdb),
                 ],
               ));
   }
@@ -191,7 +183,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
     );
   }
 
-  SliverToBoxAdapter _buildLiveStatusTitle(DashboardProvider d) {
+  SliverToBoxAdapter _buildLiveStatusTitle(RTDBProvider rtdb) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -208,50 +200,43 @@ class _DashboardState extends ConsumerState<Dashboard> {
                   fontWeight: FontWeight.w700),
             ),
             SizedBox(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  d.isOnline == true
-                      ? const Icon(
-                          Icons.circle,
-                          color: Color(0xFF059669),
-                          size: 12,
-                        )
-                      : const Icon(
-                          Icons.circle,
-                          color: Color(0xFFE2E8F0),
-                          size: 12,
-                        ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  d.isOnline == true
-                      ? const Text(
-                          "System Online",
-                          style: TextStyle(
-                              color: Color(0xFF059669),
-                              fontSize: 14,
-                              fontFamily: "PlusJakartaSans",
-                              fontWeight: FontWeight.w500),
-                        )
-                      : const Text(
-                          "System Offline",
-                          style: TextStyle(
-                              color: Color(0xFFE2E8F0),
-                              fontSize: 14,
-                              fontFamily: "PlusJakartaSans",
-                              fontWeight: FontWeight.w500),
-                        ),
-                ],
-              ),
-            )
+                child: ValueListenableBuilder<String>(
+              valueListenable: rtdb.deviceStatus,
+              builder: (context, value, child) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      color: value == "online"
+                          ? const Color(0xFF059669)
+                          : const Color(0xFF990003),
+                      size: 12,
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      value == "online" ? "System Online" : "System Offline",
+                      style: TextStyle(
+                          color: value == "online"
+                              ? const Color(0xFF059669)
+                              : const Color(0xFF990003),
+                          fontSize: 14,
+                          fontFamily: "PlusJakartaSans",
+                          fontWeight: FontWeight.w500),
+                    )
+                  ],
+                );
+              },
+            ))
           ],
         ),
       ),
     );
   }
 
-  SliverPadding _buildLiveStatus(DashboardProvider d) {
+  SliverPadding _buildLiveStatus(RTDBProvider rtdb) {
     return SliverPadding(
         padding: const EdgeInsets.fromLTRB(20, 15, 20, 0),
         sliver: SliverGrid(
@@ -264,11 +249,11 @@ class _DashboardState extends ConsumerState<Dashboard> {
             delegate: SliverChildListDelegate.fixed(
               [
                 ValueListenableBuilder<double>(
-                  valueListenable: d.nutrientLevel,
+                  valueListenable: rtdb.nutrientLevel,
                   builder: (_, value, __) {
                     return SensorCard(
                       title: 'Nutrient Level',
-                      value: value.toStringAsFixed(1),
+                      value: value.toStringAsFixed(2),
                       unit: 'ppm',
                       status: 'Normal',
                       bgStatusColor: const Color(0xFFF4DCFC),
@@ -279,7 +264,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                   },
                 ),
                 ValueListenableBuilder<double>(
-                  valueListenable: d.phLevel,
+                  valueListenable: rtdb.phLevel,
                   builder: (_, value, __) {
                     return SensorCard(
                       title: 'pH Level',
@@ -294,7 +279,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                   },
                 ),
                 ValueListenableBuilder<double>(
-                  valueListenable: d.waterLevel,
+                  valueListenable: rtdb.waterLevel,
                   builder: (_, value, __) {
                     return SensorCard(
                       title: 'Water Level',
@@ -312,7 +297,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
             )));
   }
 
-  SliverToBoxAdapter _buildDeviceControlTitle() {
+  SliverToBoxAdapter _buildDeviceControlTitle(RTDBProvider rtdb) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsetsGeometry.fromLTRB(20, 35, 20, 0),
@@ -328,78 +313,40 @@ class _DashboardState extends ConsumerState<Dashboard> {
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A)),
               ),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  "Manage All",
-                  style: TextStyle(
-                      fontFamily: "PlusJakartaSans",
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF059669)),
-                ),
-              )
+              ValueListenableBuilder<String>(
+                  valueListenable: rtdb.controllerMode,
+                  builder: (context, value, child) {
+                    return Text(
+                      value == "manual" ? "Manual" : "Auto",
+                      style: TextStyle(
+                          fontFamily: "PlusJakartaSans",
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: value == "manual"
+                              ? const Color(0xFF990003)
+                              : const Color(0xFF059669)),
+                    );
+                  })
             ]),
       ),
     );
   }
 
-  SliverToBoxAdapter _buildDeviceControl(WidgetRef ref, DashboardProvider d) {
+  SliverToBoxAdapter _buildDeviceControl(WidgetRef ref, RTDBProvider rtdb) {
     return SliverToBoxAdapter(
         child: Padding(
-      padding: const EdgeInsetsGeometry.fromLTRB(20, 15, 20, 120),
+      padding: const EdgeInsetsGeometry.fromLTRB(20, 5, 20, 120),
       child: LayoutBuilder(builder: (context, constraints) {
-        final fullWidth = constraints.maxWidth;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ValueListenableBuilder<String>(
-                valueListenable: d.controllerMode,
-                builder: (_, mode, __) {
-                  return AnimatedToggleSwitch<String>.size(
-                    current: mode,
-                    values: const ["manual", "auto"],
-                    iconOpacity: 0.2,
-                    indicatorSize: Size(fullWidth / 2, 42),
-                    customIconBuilder: (context, local, global) => Text(
-                      local.value == "auto" ? "Auto" : "Manual",
-                      style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 14,
-                          fontFamily: "PlusJakartaSans",
-                          fontWeight: FontWeight.w600),
-                    ),
-                    borderWidth: 5.0,
-                    iconAnimationType: AnimationType.onHover,
-                    style: ToggleStyle(
-                        backgroundColor: Colors.white,
-                        indicatorColor: const Color(0xFF059669),
-                        borderColor: Colors.transparent,
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Color(0xFFE2E8F0),
-                            spreadRadius: 0.5,
-                            blurRadius: 1,
-                            offset: Offset(0, 3),
-                          )
-                        ]),
-                    selectedIconScale: 1.0,
-                    onChanged: (value) {
-                      ref.read(dashboardProvider).setMode(value);
-                    },
-                  );
-                }),
-            const SizedBox(
-              height: 5,
-            ),
-            ValueListenableBuilder<String>(
-                valueListenable: d.controllerMode,
+                valueListenable: rtdb.controllerMode,
                 builder: (_, value, __) {
                   return value == "manual"
                       ? Column(children: [
                           ValueListenableBuilder<bool>(
-                            valueListenable: d.waterController,
+                            valueListenable: rtdb.waterController,
                             builder: (_, isActive, __) {
                               return ControlCard(
                                 title: "Water Pump",
@@ -408,13 +355,13 @@ class _DashboardState extends ConsumerState<Dashboard> {
                                 iconPath: "assets/images/water.png",
                                 bgIconColor: const Color(0xFFEFF6FF),
                                 onToggle: (value) {
-                                  ref.read(dashboardProvider).setWater(value);
+                                  ref.read(rtdbProvider).setWater(value);
                                 },
                               );
                             },
                           ),
                           ValueListenableBuilder<bool>(
-                            valueListenable: d.nutrientController,
+                            valueListenable: rtdb.nutrientController,
                             builder: (_, isActive, __) {
                               return ControlCard(
                                 title: "Nutrient Pump",
@@ -423,9 +370,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                                 iconPath: "assets/images/nutrient.png",
                                 bgIconColor: const Color(0xFFFBEFFF),
                                 onToggle: (value) {
-                                  ref
-                                      .read(dashboardProvider)
-                                      .setNutrient(value);
+                                  ref.read(rtdbProvider).setNutrient(value);
                                 },
                               );
                             },

@@ -11,6 +11,14 @@ class RTDBService{
       databaseURL:
           "https://smart-hydroponic-14bcf-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
+  DatabaseReference get _statusDevice =>
+      _db.ref("devices/$deviceId/status");
+
+  Stream<String> getDeviceStatusStream(){
+    return _statusDevice.onValue
+        .map((event) => event.snapshot.value as String? ?? "offline");
+  }
+
   // ========== Controller Mode ==========
   DatabaseReference get _autoModeRef =>
       _db.ref("control/$deviceId/mode");

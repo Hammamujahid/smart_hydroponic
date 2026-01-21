@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:smart_hydroponic/data/repositories/device_repository.dart';
 import 'package:smart_hydroponic/data/repositories/user_repository.dart';
 import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/data/services/device_service.dart';
 import 'package:smart_hydroponic/data/services/user_service.dart';
+import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 
 final pairingProvider = ChangeNotifierProvider<PairingProvider>((ref) {
-  return PairingProvider(DeviceRepository(DeviceService()),
-      UserRepository(UserService()), AuthService());
+  return PairingProvider(
+    ref,
+    DeviceRepository(DeviceService()),
+    UserRepository(UserService()),
+    AuthService(),
+  );
 });
 
 enum PairingStatus {
@@ -19,11 +25,12 @@ enum PairingStatus {
 }
 
 class PairingProvider extends ChangeNotifier {
+  final Ref ref;
   final DeviceRepository deviceRepo;
   final UserRepository userRepo;
   final AuthService auth;
 
-  PairingProvider(this.deviceRepo, this.userRepo, this.auth);
+  PairingProvider(this.ref, this.deviceRepo, this.userRepo, this.auth);
 
   PairingStatus status = PairingStatus.idle;
   String? errorMessage;
@@ -67,14 +74,17 @@ class PairingProvider extends ChangeNotifier {
 
       debugPrint('update Device berhasillll');
 
-      await userRepo.updateUserById(
-        user.copyWith(
-          activeDeviceId: deviceId,
-          updatedAt: DateTime.now(),
-        ),
+      final updatedUser = user.copyWith(
+        activeDeviceId: deviceId,
+        updatedAt: DateTime.now(),
       );
 
+      await userRepo.updateUserById(updatedUser);
       debugPrint('Updatee User BERHAISLLLLL');
+
+// 🔥 SOURCE OF TRUTH UI
+      ref.read(userProvider).setSelectedUser(updatedUser);
+      debugPrint(' BERHAISLLLLL');
 
       status = PairingStatus.success;
     } catch (e) {
