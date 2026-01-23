@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/login.dart';
 import 'package:smart_hydroponic/presentation/widgets/bottom_bar.dart';
@@ -13,18 +14,28 @@ class AuthGate extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final userProv = ref.watch(userProvider);
 
-    // ===== BOOTSTRAP USER (ONLY IF AUTH VALID) =====
+    // ===== BOOTSTRAP USER =====
     if (auth.uid != null &&
         userProv.selectedUser == null &&
         !userProv.isLoading) {
       Future.microtask(() {
-        // DOUBLE GUARD
-        final currentUid = ref.read(authProvider).uid;
-        if (currentUid != null) {
-          ref.read(userProvider).getUserById(currentUid);
+        final uid = ref.read(authProvider).uid;
+        if (uid != null) {
+          ref.read(userProvider).getUserById(uid);
         }
       });
     }
+
+    // ===== BOOTSTRAP DEVICE (REAKSI TERHADAP USER) =====
+    ref.listen<String?>(
+      userProvider.select((u) => u.selectedUser?.activeDeviceId),
+      (prev, next) {
+        if (next != null) {
+          ref.read(deviceProvider).getDeviceById(next);
+        }
+      },
+    );
+
 
     // ===== UI FLOW =====
     if (auth.uid == null) {

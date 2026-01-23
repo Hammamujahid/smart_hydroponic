@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/rtdb_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 
@@ -19,6 +20,8 @@ class _SettingsState extends ConsumerState<Settings> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     final rtdb = ref.watch(rtdbProvider);
+    final user = ref.watch(userProvider).selectedUser;
+    final device = ref.watch(deviceProvider).selectedDevice;
 
     return Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
@@ -69,21 +72,21 @@ class _SettingsState extends ConsumerState<Settings> {
                           borderRadius: BorderRadius.circular(12),
                           color: Colors.white,
                         ),
-                        child: const Column(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               "Email",
                               style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontFamily: "PlusJakartaSans",
                                   fontSize: 16),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Text(
-                              "....@gmail.com",
-                              style: TextStyle(
+                              (user?.email).toString(),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontFamily: "PlusJakartaSans",
                                   fontSize: 14),
@@ -111,21 +114,21 @@ class _SettingsState extends ConsumerState<Settings> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Column(
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "Username",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontFamily: "PlusJakartaSans",
                                       fontSize: 16),
                                 ),
-                                SizedBox(height: 5),
+                                const SizedBox(height: 5),
                                 Text(
-                                  "blabla",
-                                  style: TextStyle(
+                                  (user?.username).toString(),
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontFamily: "PlusJakartaSans",
                                       fontSize: 14),
@@ -172,21 +175,21 @@ class _SettingsState extends ConsumerState<Settings> {
                           borderRadius: BorderRadius.circular(12),
                           color: Colors.white,
                         ),
-                        child: const Column(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               "Type",
                               style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontFamily: "PlusJakartaSans",
                                   fontSize: 16),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Text(
-                              "ESP32",
-                              style: TextStyle(
+                              (device?.type).toString(),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontFamily: "PlusJakartaSans",
                                   fontSize: 14),
@@ -214,21 +217,21 @@ class _SettingsState extends ConsumerState<Settings> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Column(
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "Plant",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontFamily: "PlusJakartaSans",
                                       fontSize: 16),
                                 ),
-                                SizedBox(height: 5),
+                                const SizedBox(height: 5),
                                 Text(
-                                  "Selada",
-                                  style: TextStyle(
+                                  (device?.title).toString(),
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                       fontFamily: "PlusJakartaSans",
                                       fontSize: 14),
@@ -301,8 +304,7 @@ class _SettingsState extends ConsumerState<Settings> {
                                           groupValue: value,
                                           onChanged: (selected) {
                                             if (selected == null) return;
-                                            if (selected == value)
-                                              return; // guard penting
+                                            if (selected == value) return;
                                             ref
                                                 .read(rtdbProvider)
                                                 .setMode(selected);
@@ -317,7 +319,7 @@ class _SettingsState extends ConsumerState<Settings> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                    const Row(
+                                                const Row(
                                                   spacing: 5,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
@@ -420,6 +422,7 @@ class _SettingsState extends ConsumerState<Settings> {
                     onTap: () async {
                       ref.read(rtdbProvider).disposeRTDB();
                       ref.read(userProvider).reset();
+                      ref.read(deviceProvider).reset();
                       await ref.read(authProvider).logout();
                     },
                     child: Container(
@@ -443,7 +446,9 @@ class _SettingsState extends ConsumerState<Settings> {
                           ],
                         )),
                   ),
-                  const SizedBox(height: 120,)
+                  const SizedBox(
+                    height: 120,
+                  )
                 ],
               ),
             ),

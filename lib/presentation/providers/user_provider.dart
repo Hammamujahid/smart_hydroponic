@@ -21,7 +21,7 @@ class UserProvider extends ChangeNotifier {
   // ===== READ =====
   Future<void> getUserById(String uid) async {
     if (uid.isEmpty) return;
-
+    debugPrint("Fetching user with ID: $uid");
     isLoading = true;
     notifyListeners();
 
@@ -36,7 +36,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   // ===== UPDATE PROFILE =====
-  Future<void> updateUseById({
+  Future<void> updateUserById({
     String? username,
     String? activeDeviceId,
   }) async {
@@ -55,10 +55,9 @@ class UserProvider extends ChangeNotifier {
   }
 
   void setSelectedUser(UserModel user) {
-  selectedUser = user;
-  notifyListeners();
-}
-
+    selectedUser = user;
+    notifyListeners();
+  }
 
   void reset() {
     selectedUser = null;

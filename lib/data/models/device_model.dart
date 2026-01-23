@@ -4,6 +4,7 @@ class DeviceModel {
   final String deviceId;
   final String? userId;
   final String type;
+  final String? title;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -11,6 +12,7 @@ class DeviceModel {
     required this.deviceId,
     this.userId,
     required this.type,
+    this.title,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -19,6 +21,7 @@ class DeviceModel {
     String? deviceId,
     String? userId,
     String? type,
+    String? title,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -26,6 +29,7 @@ class DeviceModel {
       deviceId: deviceId ?? this.deviceId,
       userId: userId ?? this.userId,
       type: type ?? this.type,
+      title: title ?? this.title,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -37,11 +41,16 @@ class DeviceModel {
         deviceId: doc.id,
         userId: doc.data()!['userId'] as String?,
         type: doc.data()!['type'],
+        title: doc.data()!['title'] as String?,
         createdAt: (doc.data()!['createdAt'] as Timestamp).toDate(),
         updatedAt: (doc.data()!['updatedAt'] as Timestamp).toDate());
   }
 
   Map<String, dynamic> toUpdateFirestore() {
-    return {'userId': userId, 'updatedAt': Timestamp.fromDate(updatedAt)};
+    return {
+      'userId': userId,
+      'title': title,
+      'updatedAt': Timestamp.fromDate(updatedAt)
+    };
   }
 }

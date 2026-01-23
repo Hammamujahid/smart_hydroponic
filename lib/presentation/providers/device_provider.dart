@@ -31,23 +31,21 @@ class DeviceProvider extends ChangeNotifier {
   }
 
   // ===== READ ONE =====
-  Future<DeviceModel?> fetchDeviceById(
-    String deviceId, {
-    bool showLoading = true,
-  }) async {
-    if (showLoading) {
-      isLoading = true;
-      notifyListeners();
+  Future<void> getDeviceById(String deviceId) async {
+    if (deviceId.isEmpty) return;
+    debugPrint("Fetching device with ID: $deviceId");
+
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      selectedDevice = await repository.getDeviceById(deviceId);
+    } catch (e) {
+      selectedDevice = null;
     }
 
-    selectedDevice = await repository.getDeviceById(deviceId);
-
-    if (showLoading) {
-      isLoading = false;
-      notifyListeners();
-    }
-
-    return selectedDevice;
+    isLoading = false;
+    notifyListeners();
   }
 
   // ===== UPDATE (NON-PAIRING) =====
