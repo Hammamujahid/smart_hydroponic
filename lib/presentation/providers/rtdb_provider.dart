@@ -19,11 +19,21 @@ class RTDBProvider extends ChangeNotifier {
   StreamSubscription? _ecSub;
   StreamSubscription? _phSub;
   StreamSubscription? _waterLevelSub;
+  StreamSubscription? _waterThresholdMinSub;
+  StreamSubscription? _waterThresholdMaxSub;
+  StreamSubscription? _nutrientThresholdMinSub;
+  StreamSubscription? _nutrientThresholdMaxSub;
 
   // ===== UI STATES (SAMA SEPERTI DASHBOARD.dart) =====
   final ValueNotifier<String> controllerMode = ValueNotifier<String>("manual");
+
   final ValueNotifier<bool> waterController = ValueNotifier<bool>(false);
+  final ValueNotifier<double> waterThresholdMin = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> waterThresholdMax = ValueNotifier<double>(0.0);
+
   final ValueNotifier<bool> nutrientController = ValueNotifier<bool>(false);
+  final ValueNotifier<double> nutrientThresholdMin = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> nutrientThresholdMax = ValueNotifier<double>(0.0);
 
   final ValueNotifier<double> nutrientLevel = ValueNotifier<double>(0.0);
   final ValueNotifier<double> phLevel = ValueNotifier<double>(0.0);
@@ -37,7 +47,7 @@ class RTDBProvider extends ChangeNotifier {
 
     _rtdb = RTDBService(deviceId);
 
-    _deviceStat = _rtdb!.getDeviceStatusStream().listen((v){
+    _deviceStat = _rtdb!.getDeviceStatusStream().listen((v) {
       deviceStatus.value = v;
     });
 
@@ -49,8 +59,26 @@ class RTDBProvider extends ChangeNotifier {
       waterController.value = v;
     });
 
+    _waterThresholdMinSub = _rtdb!.getWaterThresholdMinStream().listen((v) {
+      waterThresholdMin.value = v;
+    });
+
+    _waterThresholdMaxSub = _rtdb!.getWaterThresholdMaxStream().listen((v) {
+      waterThresholdMax.value = v;
+    });
+
     _nutrientCtrlSub = _rtdb!.getNutrientControllerStream().listen((v) {
       nutrientController.value = v;
+    });
+
+    _nutrientThresholdMinSub =
+        _rtdb!.getNutrientThresholdMinStream().listen((v) {
+      nutrientThresholdMin.value = v;
+    });
+
+    _nutrientThresholdMaxSub =
+        _rtdb!.getNutrientThresholdMaxStream().listen((v) {
+      nutrientThresholdMax.value = v;
     });
 
     _ecSub = _rtdb!.getNutrientSensorStream().listen((v) {
@@ -77,9 +105,29 @@ class RTDBProvider extends ChangeNotifier {
     _rtdb?.setWaterController(value);
   }
 
+  void setThresholdMinWater(double value) {
+    waterThresholdMin.value = value;
+    _rtdb?.setWaterThresholdMin(value);
+  }
+
+  void setThresholdMaxWater(double value) {
+    waterThresholdMax.value = value;
+    _rtdb?.setWaterThresholdMax(value);
+  }
+
   void setNutrient(bool value) {
     nutrientController.value = value;
     _rtdb?.setNutrientController(value);
+  }
+
+  void setThresholdMinNutrient(double value) {
+    nutrientThresholdMin.value = value;
+    _rtdb?.setNutrientThresholdMin(value);
+  }
+
+  void setThresholdMaxNutrient(double value) {
+    nutrientThresholdMax.value = value;
+    _rtdb?.setNutrientThresholdMax(value);
   }
 
   // ===== DISPOSE RTDB (WAJIB DIPANGGIL SAAT LOGOUT) =====
@@ -87,7 +135,11 @@ class RTDBProvider extends ChangeNotifier {
     _deviceStat?.cancel();
     _modeSub?.cancel();
     _waterCtrlSub?.cancel();
+    _waterThresholdMinSub?.cancel();
+    _waterThresholdMaxSub?.cancel();
     _nutrientCtrlSub?.cancel();
+    _nutrientThresholdMinSub?.cancel();
+    _nutrientThresholdMaxSub?.cancel();
     _ecSub?.cancel();
     _phSub?.cancel();
     _waterLevelSub?.cancel();
@@ -95,7 +147,11 @@ class RTDBProvider extends ChangeNotifier {
     _deviceStat = null;
     _modeSub = null;
     _waterCtrlSub = null;
+    _waterThresholdMinSub = null;
+    _waterThresholdMaxSub = null;
     _nutrientCtrlSub = null;
+    _nutrientThresholdMinSub = null;
+    _nutrientThresholdMaxSub = null;
     _ecSub = null;
     _phSub = null;
     _waterLevelSub = null;

@@ -49,9 +49,20 @@ class DeviceProvider extends ChangeNotifier {
   }
 
   // ===== UPDATE (NON-PAIRING) =====
-  Future<void> updateDevice(DeviceModel device) async {
-    await repository.updateDeviceById(device);
-    selectedDevice = device;
+  Future<void> updateDeviceById({
+    String? userId,
+    String? title,
+  }) async {
+    if (selectedDevice == null) return;
+
+    final updated = selectedDevice!.copyWith(
+      userId: userId ?? selectedDevice!.userId,
+      title: title ?? selectedDevice!.title,
+      updatedAt: DateTime.now(),
+    );
+
+    await repository.updateDeviceById(updated);
+    selectedDevice = updated;
     notifyListeners();
   }
 

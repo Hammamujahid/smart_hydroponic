@@ -5,6 +5,7 @@ import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/rtdb_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
+import 'package:smart_hydroponic/presentation/widgets/edit_dialog.dart';
 
 class Settings extends ConsumerStatefulWidget {
   final NotchBottomBarController? controller;
@@ -16,6 +17,24 @@ class Settings extends ConsumerStatefulWidget {
 }
 
 class _SettingsState extends ConsumerState<Settings> {
+  final _usernameController = TextEditingController();
+  final _plantController = TextEditingController();
+  final _nutrientThresholdMinController = TextEditingController();
+  final _nutrientThresholdMaxController = TextEditingController();
+  final _waterThresholdMinController = TextEditingController();
+  final _waterThresholdMaxController = TextEditingController();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _plantController.dispose();
+    _nutrientThresholdMinController.dispose();
+    _nutrientThresholdMaxController.dispose();
+    _waterThresholdMinController.dispose();
+    _waterThresholdMaxController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -136,8 +155,29 @@ class _SettingsState extends ConsumerState<Settings> {
                               ],
                             ),
                             GestureDetector(
-                              onTap: () {
-                                debugPrint("edit username");
+                              onTap: () async {
+                                _usernameController.text = user?.username ?? "";
+
+                                final result = await showDialog(
+                                  context: context,
+                                  builder: (_) => EditDialogPopup(
+                                    title: "Edit Username",
+                                    isTwoFields: false,
+                                    label1: "Username",
+                                    controller1: _usernameController,
+                                  ),
+                                );
+
+                                if (result == null) return;
+
+                                final newUsername = result["value1"] as String;
+
+                                if (newUsername.isEmpty ||
+                                    newUsername == user?.username) return;
+
+                                await ref
+                                    .read(userProvider)
+                                    .updateUserById(username: newUsername);
                               },
                               child: const Icon(
                                 Icons.edit,
@@ -239,8 +279,28 @@ class _SettingsState extends ConsumerState<Settings> {
                               ],
                             ),
                             GestureDetector(
-                              onTap: () {
-                                debugPrint("edit plant");
+                              onTap: () async {
+                                _plantController.text = device?.title ?? "";
+
+                                final result = await showDialog(
+                                  context: context,
+                                  builder: (_) => EditDialogPopup(
+                                    title: "Edit Plant",
+                                    isTwoFields: false,
+                                    label1: "Plant",
+                                    controller1: _plantController,
+                                  ),
+                                );
+
+                                if (result == null) return;
+
+                                final newPlant = result["value1"];
+
+                                if (newPlant == device?.title) return;
+
+                                await ref
+                                    .read(deviceProvider)
+                                    .updateDeviceById(title: newPlant);
                               },
                               child: const Icon(
                                 Icons.edit,
@@ -319,14 +379,14 @@ class _SettingsState extends ConsumerState<Settings> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Row(
+                                                Row(
                                                   spacing: 5,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.center,
                                                   children: [
-                                                    Text(
+                                                    const Text(
                                                       "Set TDS Level :",
                                                       style: TextStyle(
                                                           fontWeight:
@@ -335,22 +395,102 @@ class _SettingsState extends ConsumerState<Settings> {
                                                               "PlusJakartaSans",
                                                           fontSize: 14),
                                                     ),
-                                                    SizedBox(height: 5),
-                                                    Text(
-                                                      "0.8 ppm",
+                                                    const SizedBox(height: 5),
+                                                    ValueListenableBuilder<
+                                                        double>(
+                                                      valueListenable: rtdb
+                                                          .nutrientThresholdMin,
+                                                      builder: (_, value, __) {
+                                                        return Text(
+                                                          "${value.toStringAsFixed(2)} ppm",
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  "PlusJakartaSans",
+                                                              fontSize: 14),
+                                                        );
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                      " - ",
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.w400,
                                                           fontFamily:
                                                               "PlusJakartaSans",
                                                           fontSize: 14),
-                                                    )
+                                                    ),
+                                                    ValueListenableBuilder<
+                                                        double>(
+                                                      valueListenable: rtdb
+                                                          .nutrientThresholdMax,
+                                                      builder: (_, value, __) {
+                                                        return Text(
+                                                          "${value.toStringAsFixed(2)} ppm",
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  "PlusJakartaSans",
+                                                              fontSize: 14),
+                                                        );
+                                                      },
+                                                    ),
                                                   ],
                                                 ),
                                                 GestureDetector(
-                                                  onTap: () {
-                                                    debugPrint(
-                                                        "edit TDS level");
+                                                  onTap: () async {
+                                                    _nutrientThresholdMinController
+                                                            .text =
+                                                        rtdb.nutrientThresholdMin
+                                                            .value
+                                                            .toStringAsFixed(2);
+                                                    _nutrientThresholdMaxController
+                                                            .text =
+                                                        rtdb.nutrientThresholdMax
+                                                            .value
+                                                            .toStringAsFixed(2);
+
+                                                    final result =
+                                                        await showDialog(
+                                                      context: context,
+                                                      builder: (_) =>
+                                                          EditDialogPopup(
+                                                        title:
+                                                            "Edit Nutrient Threshold",
+                                                        isTwoFields: true,
+                                                        label1: "Min Threshold",
+                                                        label2: "Max Threshold",
+                                                        controller1:
+                                                            _nutrientThresholdMinController,
+                                                        controller2:
+                                                            _nutrientThresholdMaxController,
+                                                      ),
+                                                    );
+
+                                                    if (result == null) return;
+
+                                                    final min = double.tryParse(
+                                                        result["value1"]);
+                                                    final max = double.tryParse(
+                                                        result["value2"]);
+
+                                                    if (min == null ||
+                                                        max == null ||
+                                                        min >= max) return;
+
+                                                    ref
+                                                        .read(rtdbProvider)
+                                                        .setThresholdMinNutrient(
+                                                            min);
+
+                                                    ref
+                                                        .read(rtdbProvider)
+                                                        .setThresholdMaxNutrient(
+                                                            max);
                                                   },
                                                   child: const Icon(
                                                     Icons.edit,
@@ -369,14 +509,14 @@ class _SettingsState extends ConsumerState<Settings> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Row(
+                                                Row(
                                                   spacing: 5,
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.center,
                                                   children: [
-                                                    Text(
+                                                    const Text(
                                                       "Set Water Level :",
                                                       style: TextStyle(
                                                           fontWeight:
@@ -385,22 +525,102 @@ class _SettingsState extends ConsumerState<Settings> {
                                                               "PlusJakartaSans",
                                                           fontSize: 14),
                                                     ),
-                                                    SizedBox(height: 5),
-                                                    Text(
-                                                      "5%",
+                                                    const SizedBox(height: 5),
+                                                    ValueListenableBuilder<
+                                                        double>(
+                                                      valueListenable: rtdb
+                                                          .waterThresholdMin,
+                                                      builder: (_, value, __) {
+                                                        return Text(
+                                                          "${value.toStringAsFixed(0)}%",
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  "PlusJakartaSans",
+                                                              fontSize: 14),
+                                                        );
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                      " - ",
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.w400,
                                                           fontFamily:
                                                               "PlusJakartaSans",
                                                           fontSize: 14),
-                                                    )
+                                                    ),
+                                                    ValueListenableBuilder<
+                                                        double>(
+                                                      valueListenable: rtdb
+                                                          .waterThresholdMax,
+                                                      builder: (_, value, __) {
+                                                        return Text(
+                                                          "${value.toStringAsFixed(0)}%",
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  "PlusJakartaSans",
+                                                              fontSize: 14),
+                                                        );
+                                                      },
+                                                    ),
                                                   ],
                                                 ),
                                                 GestureDetector(
-                                                  onTap: () {
-                                                    debugPrint(
-                                                        "edit Water level");
+                                                  onTap: () async {
+                                                    _waterThresholdMinController
+                                                            .text =
+                                                        rtdb.waterThresholdMin
+                                                            .value
+                                                            .toStringAsFixed(2);
+                                                    _waterThresholdMaxController
+                                                            .text =
+                                                        rtdb.waterThresholdMax
+                                                            .value
+                                                            .toStringAsFixed(2);
+
+                                                    final result =
+                                                        await showDialog(
+                                                      context: context,
+                                                      builder: (_) =>
+                                                          EditDialogPopup(
+                                                        title:
+                                                            "Edit Water Threshold",
+                                                        isTwoFields: true,
+                                                        label1: "Min Threshold",
+                                                        label2: "Max Threshold",
+                                                        controller1:
+                                                            _waterThresholdMinController,
+                                                        controller2:
+                                                            _waterThresholdMaxController,
+                                                      ),
+                                                    );
+
+                                                    if (result == null) return;
+
+                                                    final min = double.tryParse(
+                                                        result["value1"]);
+                                                    final max = double.tryParse(
+                                                        result["value2"]);
+
+                                                    if (min == null ||
+                                                        max == null ||
+                                                        min >= max) return;
+
+                                                    ref
+                                                        .read(rtdbProvider)
+                                                        .setThresholdMinWater(
+                                                            min);
+
+                                                    ref
+                                                        .read(rtdbProvider)
+                                                        .setThresholdMaxWater(
+                                                            max);
                                                   },
                                                   child: const Icon(
                                                     Icons.edit,
