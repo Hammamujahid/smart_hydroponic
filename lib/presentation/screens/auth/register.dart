@@ -29,214 +29,236 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
-    return Scaffold(
-        backgroundColor: const Color(0xFF41877F),
-        body: LayoutBuilder(builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(45, 15, 45, 35),
-                    width: screenWidth,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(50),
-                        topRight: Radius.circular(50),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.arrow_back,
-                                color: Color(0xFF41877F),
-                              ),
-                              SizedBox(
-                                width: 5,
-                              ),
-                              Text("Back to login",
-                                  style: TextStyle(
-                                      fontFamily: "PlusJakartaSans",
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF41877F))),
-                            ],
+    return Stack(
+      children: [
+        Positioned.fill(
+            child: Image.asset(
+          'assets/images/background2.jpg',
+          fit: BoxFit.cover,
+        )),
+        Scaffold(
+            backgroundColor: Colors.transparent,
+            body: LayoutBuilder(builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(45, 15, 45, 35),
+                        width: screenWidth,
+                        decoration:  BoxDecoration(
+                                                    boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              offset: const Offset(0, -4),
+                            ),
+                          ],
+                          color: Colors.transparent,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(50),
+                            topRight: Radius.circular(50),
                           ),
                         ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        const Row(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                  fontFamily: "PlusJakartaSans",
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 30,
-                                  color: Color(0xFF41877F)),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.arrow_back,
+                                    color: Color(0xFF41877F),
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text("Back to login",
+                                      style: TextStyle(
+                                          fontFamily: "PlusJakartaSans",
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF41877F))),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            const Row(
+                              children: [
+                                Text(
+                                  "Sign Up",
+                                  style: TextStyle(
+                                      fontFamily: "PlusJakartaSans",
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 30,
+                                      color: Color(0xFF41877F)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 20),
+                                width: screenWidth,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: TextField(
+                                  controller: _emailController,
+                                  decoration: const InputDecoration(
+                                      hintText: "Email",
+                                      border: InputBorder.none),
+                                )),
+                            Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 20),
+                              width: screenWidth,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: TextField(
+                                controller: _passwordController,
+                                decoration: const InputDecoration(
+                                    hintText: "Password",
+                                    border: InputBorder.none),
+                                obscureText: true,
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 20),
+                              width: screenWidth,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: TextField(
+                                controller: _confirmPasswordController,
+                                decoration: const InputDecoration(
+                                    hintText: "Confirm Password",
+                                    border: InputBorder.none),
+                                obscureText: true,
+                              ),
+                            ),
+                            Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 20),
+                                width: screenWidth,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: TextField(
+                                  controller: _usernameController,
+                                  decoration: const InputDecoration(
+                                    hintText: "Username",
+                                    border: InputBorder.none,
+                                  ),
+                                )),
+                            GestureDetector(
+                              onTap: _loading
+                                  ? null
+                                  : () async {
+                                      if (_passwordController.text.trim() !=
+                                          _confirmPasswordController.text
+                                              .trim()) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                "Password dan konfirmasi tidak sama"),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      setState(() => _loading = true);
+
+                                      try {
+                                        await ref.read(authProvider).register(
+                                              email:
+                                                  _emailController.text.trim(),
+                                              password: _passwordController.text
+                                                  .trim(),
+                                              username: _usernameController.text
+                                                  .trim(),
+                                            );
+
+                                        Navigator.pushAndRemoveUntil(
+                                          // ignore: use_build_context_synchronously
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const LoginPage()),
+                                          (route) => false,
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(content: Text(e.toString())),
+                                        );
+                                      } finally {
+                                        setState(() => _loading = false);
+                                      }
+                                    },
+                              child: Container(
+                                margin: const EdgeInsets.only(top: 30),
+                                width: screenWidth,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: _loading
+                                      ? Colors.grey
+                                      : const Color(0xFF41877F),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Center(
+                                  child: _loading
+                                      ? const CircularProgressIndicator(
+                                          color: Colors.white)
+                                      : const Text(
+                                          "Sign Up",
+                                          style: TextStyle(
+                                            fontFamily: "PlusJakartaSans",
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFF1F5F9),
+                                          ),
+                                        ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 20),
-                            width: screenWidth,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: TextField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                  hintText: "Email", border: InputBorder.none),
-                            )),
-                        Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          width: screenWidth,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: TextField(
-                            controller: _passwordController,
-                            decoration: const InputDecoration(
-                                hintText: "Password", border: InputBorder.none),
-                            obscureText: true,
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          width: screenWidth,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: TextField(
-                            controller: _confirmPasswordController,
-                            decoration: const InputDecoration(
-                                hintText: "Confirm Password",
-                                border: InputBorder.none),
-                            obscureText: true,
-                          ),
-                        ),
-                        Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 20),
-                            width: screenWidth,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: TextField(
-                              controller: _usernameController,
-                              decoration: const InputDecoration(
-                                hintText: "Username",
-                                border: InputBorder.none,
-                              ),
-                            )),
-                        GestureDetector(
-                          onTap: _loading
-                              ? null
-                              : () async {
-                                  if (_passwordController.text.trim() !=
-                                      _confirmPasswordController.text.trim()) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            "Password dan konfirmasi tidak sama"),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  setState(() => _loading = true);
-
-                                  try {
-                                    await ref.read(authProvider).register(
-                                          email: _emailController.text.trim(),
-                                          password:
-                                              _passwordController.text.trim(),
-                                          username:
-                                              _usernameController.text.trim(),
-                                        );
-
-                                    Navigator.pushAndRemoveUntil(
-                                      // ignore: use_build_context_synchronously
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => const LoginPage()),
-                                      (route) => false,
-                                    );
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
-                                    );
-                                  } finally {
-                                    setState(() => _loading = false);
-                                  }
-                                },
-                          child: Container(
-                            margin: const EdgeInsets.only(top: 30),
-                            width: screenWidth,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: _loading
-                                  ? Colors.grey
-                                  : const Color(0xFF41877F),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Center(
-                              child: _loading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white)
-                                  : const Text(
-                                      "Sign Up",
-                                      style: TextStyle(
-                                        fontFamily: "PlusJakartaSans",
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFFF1F5F9),
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        }));
+                      )
+                    ],
+                  ),
+                ),
+              );
+            })),
+      ],
+    );
   }
 }

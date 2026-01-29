@@ -31,67 +31,77 @@ class _DashboardState extends ConsumerState<Dashboard> {
       debugPrint("DASHBOARD INIT → $deviceId");
     });
 
-    return Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
-        appBar: AppBar(
-          toolbarHeight: 80,
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          title: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "WELCOME BACK!",
-                style: TextStyle(
-                    color: Color(0XFF64748B),
-                    fontSize: 12,
-                    fontFamily: "PlusJakartaSans",
-                    fontWeight: FontWeight.w500),
-              ),
-              SizedBox(
-                height: 4,
-              ),
-              Text(
-                "Smart Hydroponic",
-                style: TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 20,
-                    fontFamily: "PlusJakartaSans",
-                    fontWeight: FontWeight.w700),
-              ),
-            ],
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/background.jpg',
+            fit: BoxFit.cover,
           ),
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(
-                height: 1,
-                color: const Color(0xFFE2E8F0),
-              )),
-          actions: [
-            Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: GestureDetector(
-                  onTap: () {},
-                  child: const CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.tap_and_play_rounded,
-                        color: Color(0xFF059669)),
-                  ),
-                ))
-          ],
         ),
-        body: (deviceId == null || deviceId.isEmpty)
-            ? _buildPairingPlaceholder(context)
-            : CustomScrollView(
-                slivers: [
-                  _buildLiveStatusTitle(rtdb),
-                  _buildLiveStatus(rtdb),
-                  _buildDeviceControlTitle(rtdb),
-                  _buildDeviceControl(ref, rtdb),
+        Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              toolbarHeight: 80,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              title: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "WELCOME BACK!",
+                    style: TextStyle(
+                        color: Color(0XFF64748B),
+                        fontSize: 12,
+                        fontFamily: "PlusJakartaSans",
+                        fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  Text(
+                    "Smart Hydroponic",
+                    style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 20,
+                        fontFamily: "PlusJakartaSans",
+                        fontWeight: FontWeight.w700),
+                  ),
                 ],
-              ));
+              ),
+              bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Container(
+                    height: 1,
+                    color: const Color(0xFFE2E8F0),
+                  )),
+              actions: [
+                Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.tap_and_play_rounded,
+                            color: Color(0xFF059669)),
+                      ),
+                    ))
+              ],
+            ),
+            body: (deviceId == null || deviceId.isEmpty)
+                ? _buildPairingPlaceholder(context)
+                : CustomScrollView(
+                    slivers: [
+                      _buildLiveStatusTitle(rtdb),
+                      _buildLiveStatus(rtdb),
+                      _buildDeviceControlTitle(rtdb),
+                      _buildDeviceControl(ref, rtdb),
+                    ],
+                  )),
+      ],
+    );
   }
 
   Widget _buildPairingPlaceholder(BuildContext context) {

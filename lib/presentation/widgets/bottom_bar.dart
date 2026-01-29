@@ -1,7 +1,7 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/presentation/screens/dashboard.dart';
-import 'package:smart_hydroponic/presentation/screens/monitoring.dart';
+// import 'package:smart_hydroponic/presentation/screens/monitoring.dart';
 import 'package:smart_hydroponic/presentation/screens/settings.dart';
 
 class BottomBar extends StatefulWidget {
@@ -19,7 +19,7 @@ class _BottomBarState extends State<BottomBar> {
   final NotchBottomBarController _controller =
       NotchBottomBarController(index: 0);
 
-  int maxCount = 3;
+  int maxCount = 2;
 
   @override
   void dispose() {
@@ -35,9 +35,9 @@ class _BottomBarState extends State<BottomBar> {
       Dashboard(
         controller: (_controller),
       ),
-      Monitoring(
-        controller: (_controller),
-      ),
+      // Monitoring(
+      //   controller: (_controller),
+      // ),
       Settings(
         controller: (_controller),
       ),
@@ -94,17 +94,17 @@ class _BottomBarState extends State<BottomBar> {
                   ),
                   itemLabel: 'Dashboard',
                 ),
-                BottomBarItem(
-                  inActiveItem: Icon(
-                    Icons.bar_chart,
-                    color: Color(0xFF64748B),
-                  ),
-                  activeItem: Icon(
-                    Icons.bar_chart,
-                    color: Colors.white,
-                  ),
-                  itemLabel: 'Monitoring',
-                ),
+                // BottomBarItem(
+                //   inActiveItem: Icon(
+                //     Icons.bar_chart,
+                //     color: Color(0xFF64748B),
+                //   ),
+                //   activeItem: Icon(
+                //     Icons.bar_chart,
+                //     color: Colors.white,
+                //   ),
+                //   itemLabel: 'Monitoring',
+                // ),
                 BottomBarItem(
                   inActiveItem: Icon(
                     Icons.settings,

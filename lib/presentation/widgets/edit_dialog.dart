@@ -28,6 +28,7 @@ class EditDialogPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: const Color(0xFFF1F5F9),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -63,17 +64,32 @@ class EditDialogPopup extends StatelessWidget {
           children: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "PlusJakartaSans",
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
               onPressed: () {
                 Navigator.pop(context, {
                   "value1": controller1.text.trim(),
                   "value2": controller2?.text.trim(),
                 });
               },
-              child: const Text("Save"),
+              child: const Text(
+                "Save",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "PlusJakartaSans",
+                ),
+              ),
             ),
           ],
         )
