@@ -323,20 +323,17 @@ class _DashboardState extends ConsumerState<Dashboard> {
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A)),
               ),
-              ValueListenableBuilder<String>(
-                  valueListenable: rtdb.controllerMode,
-                  builder: (context, value, child) {
-                    return Text(
-                      value == "manual" ? "Manual" : "Auto",
-                      style: TextStyle(
-                          fontFamily: "PlusJakartaSans",
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: value == "manual"
-                              ? const Color(0xFF990003)
-                              : const Color(0xFF059669)),
-                    );
-                  })
+              GestureDetector(
+                onTap: () {},
+                child: const Text(
+                  "Tooltip",
+                  style: TextStyle(
+                      fontFamily: "PlusJakartaSans",
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF0F172A)),
+                ),
+              )
             ]),
       ),
     );
@@ -344,18 +341,36 @@ class _DashboardState extends ConsumerState<Dashboard> {
 
   SliverToBoxAdapter _buildDeviceControl(WidgetRef ref, RTDBProvider rtdb) {
     return SliverToBoxAdapter(
-        child: Padding(
-      padding: const EdgeInsetsGeometry.fromLTRB(20, 5, 20, 120),
-      child: LayoutBuilder(builder: (context, constraints) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ValueListenableBuilder<String>(
-                valueListenable: rtdb.controllerMode,
-                builder: (_, value, __) {
-                  return value == "manual"
-                      ? Column(children: [
-                          ValueListenableBuilder<bool>(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ValueListenableBuilder<String>(
+            valueListenable: rtdb.waterMode,
+            builder: (_, waterValue, __) {
+              return ValueListenableBuilder<String>(
+                valueListenable: rtdb.nutrientMode,
+                builder: (_, nutrientValue, __) {
+                  if (waterValue == "auto" && nutrientValue == "auto") {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 20,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/control_auto.png',
+                          width: double.infinity,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (waterValue == "manual")
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                          child: ValueListenableBuilder<bool>(
                             valueListenable: rtdb.waterController,
                             builder: (_, isActive, __) {
                               return ControlCard(
@@ -370,7 +385,11 @@ class _DashboardState extends ConsumerState<Dashboard> {
                               );
                             },
                           ),
-                          ValueListenableBuilder<bool>(
+                        ),
+                      if (nutrientValue == "manual")
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                          child: ValueListenableBuilder<bool>(
                             valueListenable: rtdb.nutrientController,
                             builder: (_, isActive, __) {
                               return ControlCard(
@@ -385,14 +404,15 @@ class _DashboardState extends ConsumerState<Dashboard> {
                               );
                             },
                           ),
-                        ])
-                      : const Center(
-                          child: Text("Auto"),
-                        );
-                })
-          ],
-        );
-      }),
-    ));
+                        ),
+                    ],
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }

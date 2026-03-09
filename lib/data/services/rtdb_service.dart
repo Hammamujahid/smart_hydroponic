@@ -14,45 +14,52 @@ class RTDBService {
   // ========== Device Status ==========
   DatabaseReference get _statusDevice => _db.ref("devices/$deviceId/status");
 
+  DatabaseReference get _waterMaxRef => _db.ref("devices/$deviceId/water_max");
+
   Stream<String> getDeviceStatusStream() {
     return _statusDevice.onValue
         .map((event) => event.snapshot.value as String? ?? "offline");
   }
 
-  // ========== Controller Mode ==========
-  DatabaseReference get _autoModeRef => _db.ref("control/$deviceId/mode");
-
-  Stream<String> getAutoModeStream() {
-    return _autoModeRef.onValue
-        .map((event) => event.snapshot.value as String? ?? "manual");
+  Stream<double> getWaterMaxStream() {
+    return _waterMaxRef.onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
-  Future<void> setAutoMode(String value) async {
-    await _autoModeRef.set(value);
+  Future<void> setWaterMax(double value) async {
+    await _waterMaxRef.set(value);
   }
 
   // ========== Water Controller ==========
   DatabaseReference get _waterControllerRef =>
-      _db.ref("control/$deviceId/water");
+      _db.ref("control/$deviceId/water/isActived");
 
-  DatabaseReference get _waterThresholdMinRef =>
-      _db.ref("control/$deviceId/thresholds/water_min");
+  DatabaseReference get _waterModeRef =>
+      _db.ref("control/$deviceId/water/mode");
 
-  DatabaseReference get _waterThresholdMaxRef =>
-      _db.ref("control/$deviceId/thresholds/water_max");
+  DatabaseReference get _waterIntervalRef =>
+      _db.ref("control/$deviceId/water/interval");
+
+  DatabaseReference get _waterDurationRef =>
+      _db.ref("control/$deviceId/water/duration");
 
   Stream<bool> getWaterControllerStream() {
     return _waterControllerRef.onValue
         .map((event) => event.snapshot.value as bool? ?? false);
   }
 
-  Stream<double> getWaterThresholdMinStream(){
-    return _waterThresholdMinRef.onValue
+  Stream<String> getWaterModeStream() {
+    return _waterModeRef.onValue
+        .map((event) => event.snapshot.value as String? ?? "manual");
+  }
+
+  Stream<double> getWaterIntervalStream() {
+    return _waterIntervalRef.onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
-  Stream<double> getWaterThresholdMaxStream(){
-    return _waterThresholdMaxRef.onValue
+  Stream<double> getWaterDurationStream() {
+    return _waterDurationRef.onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
@@ -60,41 +67,57 @@ class RTDBService {
     await _waterControllerRef.set(value);
   }
 
-  Future<void> setWaterThresholdMin(double value) async {
-    await _waterThresholdMinRef.set(value);
+  Future<void> setWaterMode(String value) async {
+    await _waterModeRef.set(value);
   }
 
-  Future<void> setWaterThresholdMax(double value) async {
-    await _waterThresholdMaxRef.set(value);
+  Future<void> setWaterInterval(double value) async {
+    await _waterIntervalRef.set(value);
+  }
+
+  Future<void> setWaterDuration(double value) async {
+    await _waterDurationRef.set(value);
   }
 
   // ========== Nutrient Controller ==========
   DatabaseReference get _nutrientControllerRef =>
-      _db.ref("control/$deviceId/nutrient");
+      _db.ref("control/$deviceId/nutrient/isActivated");
 
   DatabaseReference get _nutrientThresholdMinRef =>
-      _db.ref("control/$deviceId/thresholds/ec_min");
+      _db.ref("control/$deviceId/nutrient/tds_min");
 
   DatabaseReference get _nutrientThresholdMaxRef =>
-      _db.ref("control/$deviceId/thresholds/ec_max");
+      _db.ref("control/$deviceId/nutrient/tds_max");
+
+  DatabaseReference get _nutrientModeRef =>
+      _db.ref("control/$deviceId/nutrient/mode");
 
   Stream<bool> getNutrientControllerStream() {
     return _nutrientControllerRef.onValue
         .map((event) => event.snapshot.value as bool? ?? false);
   }
 
-  Stream<double> getNutrientThresholdMinStream(){
+  Stream<double> getNutrientThresholdMinStream() {
     return _nutrientThresholdMinRef.onValue
-        .map((event)=> (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
-  Stream<double> getNutrientThresholdMaxStream(){
+  Stream<double> getNutrientThresholdMaxStream() {
     return _nutrientThresholdMaxRef.onValue
-        .map((event)=> (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<String> getNutrientModeStream(){
+    return _nutrientModeRef.onValue
+        .map((event) => event.snapshot.value as String? ?? "manual");
   }
 
   Future<void> setNutrientController(bool value) async {
     await _nutrientControllerRef.set(value);
+  }
+
+  Future<void> setNutrientMode(String value) async {
+    await _nutrientModeRef.set(value);
   }
 
   Future<void> setNutrientThresholdMin(double value) async {
@@ -107,7 +130,7 @@ class RTDBService {
 
   // ========== Nutrient Sensor ==========
   DatabaseReference get _nutrientSensorRef =>
-      _db.ref("sensor_data/$deviceId/ec");
+      _db.ref("sensor_data/$deviceId/tds");
 
   Stream<double> getNutrientSensorStream() {
     return _nutrientSensorRef.onValue
