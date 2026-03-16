@@ -1,5 +1,6 @@
 import 'package:smart_hydroponic/data/models/device_model.dart';
 import 'package:smart_hydroponic/data/services/device_service.dart';
+import 'package:smart_hydroponic/data/services/rtdb_service.dart';
 
 class DeviceRepository {
   final DeviceService _service;
@@ -23,4 +24,13 @@ class DeviceRepository {
     return _service.updateDeviceById(
         device.deviceId, device.toUpdateFirestore());
   }
+
+  Future<void> createDevice(DeviceModel device) {
+    return _service.createDevice(
+        device.deviceId, device.toCreateFirestore());
+  }
+
+Future<bool> deviceExistsInRTDB(String deviceId) {
+  return RTDBService.deviceExists(deviceId);
+}
 }

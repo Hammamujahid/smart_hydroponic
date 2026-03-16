@@ -1,12 +1,16 @@
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include <time.h>
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
 
 /* ================= WIFI & FIREBASE ================= */
 #define WIFI_SSID "WASIS FAMILY"
 #define WIFI_PASSWORD "01021969"
+// #define WIFI_SSID "Aku Siapa"
+// #define WIFI_PASSWORD "Hehehehehehe"
 #define DATABASE_URL "https://smart-hydroponic-14bcf-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define API_KEY "AIzaSyApu6dcDvBa2RsSkqjAEg_uomsx4zA61PY"
+#define API_KEY "AIzaSyCIhqKK-UMKd_Jmw4WGEWojye8P_zNBOro"
 
 /* ================= PIN DEFINITION ================= */
 #define RELAY_NUTRISI 26
@@ -145,14 +149,20 @@ void setup() {
   }
   Serial.println("\nWiFi Connected");
 
+  auth.user.email = "zerxonin@gmail.com";
+  auth.user.password = "123456";
   config.api_key = API_KEY;
   config.database_url = DATABASE_URL;
-  Firebase.signUp(&config, &auth, "", "");
+  config.token_status_callback = tokenStatusCallback;
   Firebase.begin(&config, &auth);
+  fbdo.setBSSLBufferSize(4096, 1024);
   Firebase.reconnectWiFi(true);
+  Serial.println("Firebase Connected");
 
   esp32Id = WiFi.macAddress();
   esp32Id.replace(":", "");
+  Serial.print("ESP32 ID: ");
+  Serial.println(esp32Id);
 }
 
 void loop() {
@@ -182,7 +192,7 @@ void loop() {
     Firebase.RTDB.setJSON(&fbdo, ("/sensor_data/" + esp32Id).c_str(), &json);
 
     // 4. Update Status
-    Firebase.RTDB.setInt(&fbdo, ("/devices/" + esp32Id + "/last_seen").c_str(), millis());
+    Firebase.RTDB.setInt(&fbdo, ("/devices/" + esp32Id + "/last_seen").c_str(), (long)time(nullptr) * 1000);
 
     // 5. Kontrol Pompa
     handlePump();

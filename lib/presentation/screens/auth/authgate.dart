@@ -14,30 +14,24 @@ class AuthGate extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final userProv = ref.watch(userProvider);
 
-    // ===== BOOTSTRAP USER =====
+    /// BOOTSTRAP USER
     if (auth.uid != null &&
         userProv.selectedUser == null &&
         !userProv.isLoading) {
       Future.microtask(() {
-        final uid = ref.read(authProvider).uid;
-        if (uid != null) {
-          ref.read(userProvider).getUserById(uid);
-        }
+        ref.read(userProvider).getUserById(auth.uid!);
       });
     }
 
-    // ===== BOOTSTRAP DEVICE (REAKSI TERHADAP USER) =====
-    ref.listen<String?>(
-      userProvider.select((u) => u.selectedUser?.activeDeviceId),
-      (prev, next) {
-        if (next != null) {
-          ref.read(deviceProvider).getDeviceById(next);
-        }
-      },
-    );
+    /// BOOTSTRAP DEVICE
+    final activeDeviceId = userProv.selectedUser?.activeDeviceId;
+    if (activeDeviceId != null) {
+      Future.microtask(() {
+        ref.read(deviceProvider).getDeviceById(activeDeviceId);
+      });
+    }
 
-
-    // ===== UI FLOW =====
+    /// UI FLOW
     if (auth.uid == null) {
       return const LoginPage();
     }

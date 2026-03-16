@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_hydroponic/presentation/providers/pairing_provider.dart';
 import 'package:smart_hydroponic/presentation/screens/auth/authgate.dart';
+import 'package:toastification/toastification.dart';
 
 class QrScanner extends ConsumerStatefulWidget {
   const QrScanner({super.key});
@@ -27,26 +28,62 @@ class _QrScannerState extends ConsumerState<QrScanner> {
 
   Widget _barcodePreview(Barcode? barcode) {
     if (barcode == null) {
-      return const Text(
-        "Scan QR Device",
-        style: TextStyle(color: Colors.white),
+      return const Center(
+        child: Text(
+          "Scanning...",
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            fontFamily: "PlusJakartaSans",
+          ),
+        ),
       );
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       spacing: 10,
       children: [
         Text(
           'Device Id: ${barcode.displayValue}',
           overflow: TextOverflow.fade,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            fontFamily: "PlusJakartaSans",
+          ),
         ),
-        ElevatedButton(
-          onPressed: () {
+        GestureDetector(
+          onTap: () {
             ref.read(pairingProvider).pair(barcode.displayValue!);
           },
-          child: const Text("Next"),
-        )
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFFE2E8F0),
+                  spreadRadius: 0.5,
+                  blurRadius: 1,
+                  offset: Offset(0, 3),
+                ),
+              ],
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+            ),
+            child: const Text(
+              "Next",
+              style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "PlusJakartaSans"),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -62,14 +99,29 @@ class _QrScannerState extends ConsumerState<QrScanner> {
         }
 
         if (next.status == PairingStatus.error && next.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(next.errorMessage!)),
+          toastification.show(
+            type: ToastificationType.error,
+            context: context,
+            title: Text(
+              next.errorMessage!,
+              style: const TextStyle(fontFamily: 'PlusJakartaSans'),
+            ),
+            autoCloseDuration: const Duration(seconds: 3),
           );
         }
       });
     }
     ref.listen<PairingProvider>(pairingProvider, (prev, next) {
       if (next.status == PairingStatus.success) {
+        toastification.show(
+          type: ToastificationType.success,
+          context: context,
+          title: const Text(
+            "Device paired successfully",
+            style: TextStyle(fontFamily: 'PlusJakartaSans'),
+          ),
+          autoCloseDuration: const Duration(seconds: 3),
+        );
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const AuthGate()),
@@ -78,14 +130,29 @@ class _QrScannerState extends ConsumerState<QrScanner> {
       }
 
       if (next.status == PairingStatus.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage ?? 'Pairing gagal')),
+        toastification.show(
+          type: ToastificationType.error,
+          context: context,
+          title: Text(
+            next.errorMessage!,
+            style: const TextStyle(fontFamily: 'PlusJakartaSans'),
+          ),
+          autoCloseDuration: const Duration(seconds: 3),
         );
       }
     });
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan QR Device')),
-      backgroundColor: Colors.black,
+      appBar: AppBar(
+          backgroundColor: const Color(0xFFE2E8F0),
+          title: const Text(
+            'Scan QR Device',
+            style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                fontFamily: "PlusJakartaSans"),
+          )),
+      backgroundColor: const Color(0xFFE2E8F0),
       body: Stack(
         children: [
           MobileScanner(onDetect: _handleBarcode),
@@ -93,7 +160,7 @@ class _QrScannerState extends ConsumerState<QrScanner> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height: 120,
-              color: Colors.black54,
+              color: const Color(0xFFE2E8F0),
               child: Center(
                 child: _barcodePreview(_barcode),
               ),

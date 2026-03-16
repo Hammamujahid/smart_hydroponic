@@ -11,14 +11,20 @@ class RTDBService {
       databaseURL:
           "https://smart-hydroponic-14bcf-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
+  // ========== Cek Device ==========
+  static Future<bool> deviceExists(String deviceId) async {
+    final snapshot = await _db.ref("devices/$deviceId").get();
+    return snapshot.exists;
+  }
+
   // ========== Device Status ==========
-  DatabaseReference get _statusDevice => _db.ref("devices/$deviceId/status");
+  DatabaseReference get _statusDevice => _db.ref("devices/$deviceId/last_seen");
 
   DatabaseReference get _waterMaxRef => _db.ref("devices/$deviceId/water_max");
 
-  Stream<String> getDeviceStatusStream() {
+  Stream<int> getDeviceStatusStream() {
     return _statusDevice.onValue
-        .map((event) => event.snapshot.value as String? ?? "offline");
+        .map((event) => event.snapshot.value as int? ?? 0);
   }
 
   Stream<double> getWaterMaxStream() {
@@ -81,7 +87,7 @@ class RTDBService {
 
   // ========== Nutrient Controller ==========
   DatabaseReference get _nutrientControllerRef =>
-      _db.ref("control/$deviceId/nutrient/isActivated");
+      _db.ref("control/$deviceId/nutrient/isActived");
 
   DatabaseReference get _nutrientThresholdMinRef =>
       _db.ref("control/$deviceId/nutrient/tds_min");

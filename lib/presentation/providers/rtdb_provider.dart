@@ -41,7 +41,7 @@ class RTDBProvider extends ChangeNotifier {
   final ValueNotifier<double> phLevel = ValueNotifier<double>(0.0);
   final ValueNotifier<double> waterLevel = ValueNotifier<double>(0.0);
 
-  final ValueNotifier<String> deviceStatus = ValueNotifier<String>("offline");
+  final ValueNotifier<int> deviceStatus = ValueNotifier<int>(0);
   final ValueNotifier<double> waterMax = ValueNotifier<double>(0.0);
 
   // ===== INIT RTDB (PENGGANTI init()) =====

@@ -20,7 +20,7 @@ class UserProvider extends ChangeNotifier {
 
   // ===== READ =====
   Future<void> getUserById(String uid) async {
-    if (uid.isEmpty) return;
+  if (uid.isEmpty || selectedUser != null) return;
     debugPrint("Fetching user with ID: $uid");
     isLoading = true;
     notifyListeners();
@@ -28,7 +28,7 @@ class UserProvider extends ChangeNotifier {
     try {
       selectedUser = await repository.getUserById(uid);
     } catch (e) {
-      selectedUser = null;
+      debugPrint("Error fetching user: $e");
     }
 
     isLoading = false;
@@ -56,6 +56,20 @@ class UserProvider extends ChangeNotifier {
 
   void setSelectedUser(UserModel user) {
     selectedUser = user;
+    notifyListeners();
+  }
+
+  Future<void> updateActiveDeviceId(String userId, String? deviceId) async {
+    if (selectedUser == null) return;
+
+    final updated = selectedUser!.copyWith(
+      activeDeviceId: deviceId,
+      updatedAt: DateTime.now(),
+    );
+
+    await repository.updateUserById(updated);
+
+    selectedUser = updated;
     notifyListeners();
   }
 

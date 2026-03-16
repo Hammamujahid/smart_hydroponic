@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 class EditDialogPopup extends StatelessWidget {
   final String title;
@@ -13,6 +14,8 @@ class EditDialogPopup extends StatelessWidget {
   final TextInputType keyboardType1;
   final TextInputType keyboardType2;
 
+  final String notification;
+
   const EditDialogPopup({
     super.key,
     required this.title,
@@ -23,6 +26,7 @@ class EditDialogPopup extends StatelessWidget {
     this.controller2,
     this.keyboardType1 = TextInputType.text,
     this.keyboardType2 = TextInputType.text,
+    required this.notification,
   });
 
   @override
@@ -77,6 +81,14 @@ class EditDialogPopup extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
               onPressed: () {
+                toastification.show(
+                  context: context,
+                  title: Text("Edit ${notification.toLowerCase()} saved",
+                      style: const TextStyle(fontFamily: 'PlusJakartaSans')),
+                  type: ToastificationType.success,
+                          autoCloseDuration: const Duration(seconds: 3),
+
+                );
                 Navigator.pop(context, {
                   "value1": controller1.text.trim(),
                   "value2": controller2?.text.trim(),

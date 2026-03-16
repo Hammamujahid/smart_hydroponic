@@ -18,9 +18,10 @@ class DeviceProvider extends ChangeNotifier {
   List<DeviceModel> devices = [];
   DeviceModel? selectedDevice;
   bool isLoading = false;
+  List<DeviceModel> otherDevices = [];
 
   // ===== READ ALL =====
-  Future<void> fetchDevices() async {
+  Future<void> getDevices() async {
     isLoading = true;
     notifyListeners();
 
@@ -63,6 +64,34 @@ class DeviceProvider extends ChangeNotifier {
 
     await repository.updateDeviceById(updated);
     selectedDevice = updated;
+    notifyListeners();
+  }
+
+  Future<void> getDevicesByUserId(String userId) async {
+    isLoading = true;
+    notifyListeners();
+
+    otherDevices = (await repository.getDevices())
+        .where((d) => d.userId == userId)
+        .toList();
+
+    isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> removeUserIdByDeviceId(String deviceId) async {
+    if (deviceId.isEmpty) return;
+
+    final device = await repository.getDeviceById(deviceId);
+    if (device == null) return;
+
+    final updated = device.copyWith(
+      userId: "",
+      updatedAt: DateTime.now(),
+    );
+
+    await repository.updateDeviceById(updated);
+    
     notifyListeners();
   }
 

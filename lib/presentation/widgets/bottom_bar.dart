@@ -35,9 +35,6 @@ class _BottomBarState extends State<BottomBar> {
       Dashboard(
         controller: (_controller),
       ),
-      // Monitoring(
-      //   controller: (_controller),
-      // ),
       Settings(
         controller: (_controller),
       ),
@@ -94,17 +91,6 @@ class _BottomBarState extends State<BottomBar> {
                   ),
                   itemLabel: 'Dashboard',
                 ),
-                // BottomBarItem(
-                //   inActiveItem: Icon(
-                //     Icons.bar_chart,
-                //     color: Color(0xFF64748B),
-                //   ),
-                //   activeItem: Icon(
-                //     Icons.bar_chart,
-                //     color: Colors.white,
-                //   ),
-                //   itemLabel: 'Monitoring',
-                // ),
                 BottomBarItem(
                   inActiveItem: Icon(
                     Icons.settings,

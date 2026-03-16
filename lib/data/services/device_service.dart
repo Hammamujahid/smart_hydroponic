@@ -15,4 +15,8 @@ class DeviceService {
   Future<void> updateDeviceById(String deviceId, Map<String, dynamic> data) {
     return _devices.doc(deviceId).update(data);
   }
+
+  Future<void> createDevice(String deviceId, Map<String, dynamic> data) {
+    return _devices.doc(deviceId).set(data);
+  }
 }
