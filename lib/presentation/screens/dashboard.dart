@@ -317,7 +317,7 @@ class _DashboardState extends ConsumerState<Dashboard>
                         );
                       }),
 
-                      SizedBox(height: 16,),
+                      const SizedBox(height: 16,),
                       const Divider(),
 
                       /// ADD DEVICE

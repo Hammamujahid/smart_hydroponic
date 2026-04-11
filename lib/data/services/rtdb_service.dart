@@ -134,6 +134,43 @@ class RTDBService {
     await _nutrientThresholdMaxRef.set(value);
   }
 
+  // ========== pH Controller ==========
+  DatabaseReference get _phControllerRef =>
+      _db.ref("control/$deviceId/ph/isActived");
+
+  DatabaseReference get _phThresholdMinRef =>
+      _db.ref("control/$deviceId/ph/ph_min");
+
+  DatabaseReference get _phModeRef =>
+      _db.ref("control/$deviceId/ph/mode");
+
+  Stream<bool> getPhControllerStream() {
+    return _phControllerRef.onValue
+        .map((event) => event.snapshot.value as bool? ?? false);
+  }
+
+  Stream<double> getPhThresholdMinStream() {
+    return _phThresholdMinRef.onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<String> getPhModeStream(){
+    return _phModeRef.onValue
+        .map((event) => event.snapshot.value as String? ?? "manual");
+  }
+
+  Future<void> setPhController(bool value) async {
+    await _phControllerRef.set(value);
+  }
+
+  Future<void> setPhMode(String value) async {
+    await _phModeRef.set(value);
+  }
+
+  Future<void> setPhThresholdMin(double value) async {
+    await _phThresholdMinRef.set(value);
+  }
+
   // ========== Nutrient Sensor ==========
   DatabaseReference get _nutrientSensorRef =>
       _db.ref("sensor_data/$deviceId/tds");

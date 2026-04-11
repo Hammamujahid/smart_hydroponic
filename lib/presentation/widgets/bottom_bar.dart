@@ -1,5 +1,6 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_hydroponic/presentation/screens/controls.dart';
 import 'package:smart_hydroponic/presentation/screens/dashboard.dart';
 // import 'package:smart_hydroponic/presentation/screens/monitoring.dart';
 import 'package:smart_hydroponic/presentation/screens/settings.dart';
@@ -19,7 +20,7 @@ class _BottomBarState extends State<BottomBar> {
   final NotchBottomBarController _controller =
       NotchBottomBarController(index: 0);
 
-  int maxCount = 2;
+  int maxCount = 3;
 
   @override
   void dispose() {
@@ -33,6 +34,9 @@ class _BottomBarState extends State<BottomBar> {
     /// widget list
     final List<Widget> bottomBarPages = [
       Dashboard(
+        controller: (_controller),
+      ),
+      Controls(
         controller: (_controller),
       ),
       Settings(
@@ -90,6 +94,17 @@ class _BottomBarState extends State<BottomBar> {
                     color: Colors.white,
                   ),
                   itemLabel: 'Dashboard',
+                ),
+                BottomBarItem(
+                  inActiveItem: Icon(
+                    Icons.control_point_duplicate,
+                    color: Color(0xFF64748B),
+                  ),
+                  activeItem: Icon(
+                    Icons.control_point_duplicate,
+                    color: Colors.white,
+                  ),
+                  itemLabel: 'Controls',
                 ),
                 BottomBarItem(
                   inActiveItem: Icon(

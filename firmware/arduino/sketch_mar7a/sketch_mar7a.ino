@@ -13,7 +13,8 @@
 #define API_KEY "AIzaSyCIhqKK-UMKd_Jmw4WGEWojye8P_zNBOro"
 
 /* ================= PIN DEFINITION ================= */
-#define RELAY_NUTRISI 26
+#define RELAY_PH 25
+#define RELAY_NUTRIENT 26
 #define RELAY_WATER 27
 #define TRIG_PIN 19
 #define ECHO_PIN 18
@@ -38,11 +39,27 @@ unsigned long lastSend = 0;
 int analogBuffer[SCOUNT];
 int analogBufferIndex = 0;
 
-// Pompa Variables
-unsigned long lastPumpStart = 0;
-unsigned long pumpInterval = 300000;
-unsigned long pumpDuration = 10000;
-bool pumpRunning = false;
+// Water Pompa Variables
+unsigned long lastWaterPumpStart = 0;
+unsigned long waterPumpInterval = 300000;
+unsigned long waterPumpDuration = 10000;
+bool waterPumpRunning = false;
+
+// Nutrient Pompa Variables
+unsigned long lastNutPumpStart = 0;
+unsigned long nutPumpInterval = 10000;
+unsigned long nutPumpDuration = 500;
+int nutTDSMax = 1000;
+int nutTDSMin = 400;
+bool nutPumpRunning = false;
+
+/* ================= PH POMPA VARIABLES ================= */
+unsigned long lastPhPumpStart = 0;
+unsigned long phPumpInterval = 10000;
+unsigned long phPumpDuration = 500;
+float phMin = 6.0;  // pH minimum (default)
+bool phPumpRunning = false;
+
 
 /* ================== MEDIAN FILTER ================= */
 int getMedianNum(int bArray[], int len) {
@@ -101,44 +118,183 @@ float readDistanceCm() {
 
 /* ================== CORE LOGIC ================= */
 
-void handlePump() {
-  // Ambil pengaturan dari Firebase
+void handleWaterPump() {
   String path = "/control/" + esp32Id + "/water";
-  String mode = "auto";
-  bool isActived = false;
 
-  if (Firebase.RTDB.getString(&fbdo, path + "/mode")) mode = fbdo.stringData();
-  if (Firebase.RTDB.getBool(&fbdo, path + "/isActived")) isActived = fbdo.boolData();
-  if (Firebase.RTDB.getInt(&fbdo, path + "/interval")) pumpInterval = fbdo.intData();
-  if (Firebase.RTDB.getInt(&fbdo, path + "/duration")) pumpDuration = fbdo.intData();
+  bool okMode = Firebase.RTDB.getString(&fbdo, path + "/mode");
+  String mode = fbdo.stringData();
+
+  bool okActive = Firebase.RTDB.getBool(&fbdo, path + "/isActived");
+  bool isActived = fbdo.boolData();
+
+  bool okInterval = Firebase.RTDB.getInt(&fbdo, path + "/interval");
+  if (okInterval) waterPumpInterval = fbdo.intData();
+
+  bool okDuration = Firebase.RTDB.getInt(&fbdo, path + "/duration");
+  if (okDuration) waterPumpDuration = fbdo.intData();
 
   unsigned long now = millis();
 
+  /* ================= FAIL SAFE ================= */
+  if (!okMode || !okActive) {
+    Serial.println("WATER: Firebase ERROR → FORCE OFF");
+    digitalWrite(RELAY_WATER, HIGH);
+    waterPumpRunning = false;
+    return;
+  }
+
   if (mode == "auto") {
-    if (!pumpRunning && (now - lastPumpStart >= pumpInterval || lastPumpStart == 0)) {
+    if (!waterPumpRunning && (now - lastWaterPumpStart >= waterPumpInterval || lastWaterPumpStart == 0)) {
       digitalWrite(RELAY_WATER, LOW);
-      pumpRunning = true;
-      lastPumpStart = now;
-      Serial.println("PUMP: Auto ON");
+      waterPumpRunning = true;
+      lastWaterPumpStart = now;
+      Serial.println("WATER PUMP: Auto ON");
     }
-    if (pumpRunning && (now - lastPumpStart >= pumpDuration)) {
+    if (waterPumpRunning && (now - lastWaterPumpStart >= waterPumpDuration)) {
       digitalWrite(RELAY_WATER, HIGH);
-      pumpRunning = false;
-      lastPumpStart = now;  // Reset interval dari titik mati
-      Serial.println("PUMP: Auto OFF");
+      waterPumpRunning = false;
+      lastWaterPumpStart = now;  // Reset interval dari titik mati
+      Serial.println("WATER PUMP: Auto OFF");
     }
   } else {  // Manual
     digitalWrite(RELAY_WATER, isActived ? LOW : HIGH);
-    pumpRunning = isActived;
+    waterPumpRunning = isActived;
+    return;
+  }
+}
+
+void handleNutrientPump() {
+  String path = "/control/" + esp32Id + "/nutrient";
+
+  bool okMode = Firebase.RTDB.getString(&fbdo, path + "/mode");
+  String mode = fbdo.stringData();
+
+  bool okActive = Firebase.RTDB.getBool(&fbdo, path + "/isActived");
+  bool isActived = fbdo.boolData();
+
+  bool okTDSMin = Firebase.RTDB.getInt(&fbdo, path + "/tds_min");
+  if (okTDSMin) nutTDSMin = fbdo.intData();
+
+  bool okTDSMax = Firebase.RTDB.getInt(&fbdo, path + "/tds_max");
+  if (okTDSMax) nutTDSMax = fbdo.intData();
+
+  float tds = readTdsValue();
+  unsigned long now = millis();
+
+  // ===== FAIL SAFE =====
+  if (!okMode || !okActive) {
+    Serial.println("NUTRIENT: Firebase ERROR → FORCE OFF");
+    digitalWrite(RELAY_NUTRIENT, HIGH);
+    nutPumpRunning = false;
+    return;
+  }
+
+  if (mode == "manual") {
+
+    // if (isActived) {
+    //   if (!nutPumpRunning && (now - lastNutPumpStart >= nutPumpInterval || lastNutPumpStart == 0)) {
+    //     digitalWrite(RELAY_NUTRIENT, LOW);
+    //     nutPumpRunning = true;
+    //     lastNutPumpStart = now;
+    //   }
+
+    //   if (nutPumpRunning && now - lastNutPumpStart >= nutPumpDuration) {
+    //     digitalWrite(RELAY_NUTRIENT, HIGH);
+    //     nutPumpRunning = false;
+    //     lastNutPumpStart = now;
+    //   }
+
+    // } else {
+    //   digitalWrite(RELAY_NUTRIENT, HIGH);
+    //   nutPumpRunning = false;
+    //   lastNutPumpStart = now;
+    // }
+
+    digitalWrite(RELAY_NUTRIENT, isActived ? LOW : HIGH);
+    nutPumpRunning = isActived;
+
+    return;
+  }
+
+  // AUTO
+  if (tds < nutTDSMin) {
+    if (!nutPumpRunning && (now - lastNutPumpStart >= nutPumpInterval || lastNutPumpStart == 0)) {
+      digitalWrite(RELAY_NUTRIENT, LOW);
+      nutPumpRunning = true;
+      lastNutPumpStart = now;
+    }
+
+    if (nutPumpRunning && now - lastNutPumpStart >= nutPumpDuration) {
+      digitalWrite(RELAY_NUTRIENT, HIGH);
+      nutPumpRunning = false;
+      lastNutPumpStart = now;
+    }
+
+  } else {
+    digitalWrite(RELAY_NUTRIENT, HIGH);
+    nutPumpRunning = false;
+  }
+}
+
+void handlePhPump() {
+  String path = "/control/" + esp32Id + "/ph";
+
+  bool okMode = Firebase.RTDB.getString(&fbdo, path + "/mode");
+  String mode = fbdo.stringData();
+
+  bool okActive = Firebase.RTDB.getBool(&fbdo, path + "/isActived");
+  bool isActived = fbdo.boolData();
+
+  bool okPhMin = Firebase.RTDB.getFloat(&fbdo, path + "/ph_min");
+  if (okPhMin) phMin = fbdo.floatData();
+
+  float ph = readPhValue();
+  unsigned long now = millis();
+
+  // ===== FAIL SAFE =====
+  if (!okMode || !okActive) {
+    Serial.println("PH: Firebase ERROR → FORCE OFF");
+    digitalWrite(RELAY_PH, HIGH);
+    phPumpRunning = false;
+    return;
+  }
+
+  if (mode == "manual") {
+    digitalWrite(RELAY_PH, isActived ? LOW : HIGH);
+    phPumpRunning = isActived;
+    return;
+  }
+
+  // AUTO — nyala jika pH di bawah threshold min
+  if (ph < phMin) {
+    if (!phPumpRunning && (now - lastPhPumpStart >= phPumpInterval || lastPhPumpStart == 0)) {
+      digitalWrite(RELAY_PH, LOW);
+      phPumpRunning = true;
+      lastPhPumpStart = now;
+      Serial.println("PH PUMP: Auto ON");
+    }
+
+    if (phPumpRunning && (now - lastPhPumpStart >= phPumpDuration)) {
+      digitalWrite(RELAY_PH, HIGH);
+      phPumpRunning = false;
+      lastPhPumpStart = now;
+      Serial.println("PH PUMP: Auto OFF");
+    }
+
+  } else {
+    digitalWrite(RELAY_PH, HIGH);
+    phPumpRunning = false;
   }
 }
 
 void setup() {
   Serial.begin(115200);
+  pinMode(RELAY_PH, OUTPUT);
   pinMode(RELAY_WATER, OUTPUT);
-  pinMode(RELAY_NUTRISI, OUTPUT);
+  pinMode(RELAY_NUTRIENT, OUTPUT);
+  digitalWrite(RELAY_PH, HIGH);
   digitalWrite(RELAY_WATER, HIGH);
-  digitalWrite(RELAY_NUTRISI, HIGH);
+  digitalWrite(RELAY_NUTRIENT, HIGH);
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
 
@@ -168,6 +324,11 @@ void setup() {
 void loop() {
   readTdsSampling();
 
+  // Kontrol Pompa
+  handleWaterPump();
+  handleNutrientPump();
+  handlePhPump();
+
   // Jalankan setiap 5 detik
   if (Firebase.ready() && (millis() - lastSend > 5000)) {
     lastSend = millis();
@@ -194,10 +355,10 @@ void loop() {
     // 4. Update Status
     Firebase.RTDB.setInt(&fbdo, ("/devices/" + esp32Id + "/last_seen").c_str(), (long)time(nullptr) * 1000);
 
-    // 5. Kontrol Pompa
-    handlePump();
-
-    Serial.printf("WL: %.1f%% | pH: %.2f | TDS: %.0f ppm | Pump: %s\n",
-                  waterLevel, ph, tds, pumpRunning ? "ON" : "OFF");
+    Serial.printf("WL: %.1f%% | pH: %.2f | TDS: %.0f ppm | Water: %s | Nutrient: %s | PH: %s\n",
+                  waterLevel, ph, tds,
+                  waterPumpRunning ? "ON" : "OFF",
+                  nutPumpRunning ? "ON" : "OFF",
+                  phPumpRunning ? "ON" : "OFF");
   }
 }
