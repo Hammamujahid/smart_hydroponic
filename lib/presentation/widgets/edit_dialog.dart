@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+class SaveResult {
+  /// Apakah simpan berhasil.
+  final bool success;
+
+  /// Pesan toast yang ditampilkan.
+  final String message;
+
+  const SaveResult.success(this.message) : success = true;
+  const SaveResult.failed(this.message) : success = false;
+}
+
 class EditDialogPopup extends StatelessWidget {
   final String title;
   final bool isTwoFields;
@@ -14,7 +25,7 @@ class EditDialogPopup extends StatelessWidget {
   final TextInputType keyboardType1;
   final TextInputType keyboardType2;
 
-  final String notification;
+  final SaveResult Function(String value1, String? value2) onSave;
 
   const EditDialogPopup({
     super.key,
@@ -26,8 +37,29 @@ class EditDialogPopup extends StatelessWidget {
     this.controller2,
     this.keyboardType1 = TextInputType.text,
     this.keyboardType2 = TextInputType.text,
-    required this.notification,
+    required this.onSave,
   });
+
+  void _handleSave(BuildContext context) {
+    final value1 = controller1.text.trim();
+    final value2 = controller2?.text.trim();
+
+    final result = onSave(value1, value2);
+
+    toastification.show(
+      context: context,
+      title: Text(result.message,
+          style: const TextStyle(fontFamily: 'PlusJakartaSans')),
+      type: result.success
+          ? ToastificationType.success
+          : ToastificationType.error,
+      autoCloseDuration: const Duration(seconds: 3),
+    );
+
+    if (result.success) {
+      Navigator.pop(context, {"value1": value1, "value2": value2});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,20 +112,7 @@ class EditDialogPopup extends StatelessWidget {
             const SizedBox(width: 8),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-              onPressed: () {
-                toastification.show(
-                  context: context,
-                  title: Text("Edit ${notification.toLowerCase()} saved",
-                      style: const TextStyle(fontFamily: 'PlusJakartaSans')),
-                  type: ToastificationType.success,
-                          autoCloseDuration: const Duration(seconds: 3),
-
-                );
-                Navigator.pop(context, {
-                  "value1": controller1.text.trim(),
-                  "value2": controller2?.text.trim(),
-                });
-              },
+              onPressed: () => _handleSave(context),
               child: const Text(
                 "Save",
                 style: TextStyle(

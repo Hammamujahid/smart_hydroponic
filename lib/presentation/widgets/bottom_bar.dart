@@ -2,7 +2,6 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:smart_hydroponic/presentation/screens/controls.dart';
 import 'package:smart_hydroponic/presentation/screens/dashboard.dart';
-// import 'package:smart_hydroponic/presentation/screens/monitoring.dart';
 import 'package:smart_hydroponic/presentation/screens/settings.dart';
 
 class BottomBar extends StatefulWidget {
@@ -97,11 +96,11 @@ class _BottomBarState extends State<BottomBar> {
                 ),
                 BottomBarItem(
                   inActiveItem: Icon(
-                    Icons.control_point_duplicate,
+                    Icons.candlestick_chart_outlined,
                     color: Color(0xFF64748B),
                   ),
                   activeItem: Icon(
-                    Icons.control_point_duplicate,
+                    Icons.candlestick_chart_outlined,
                     color: Colors.white,
                   ),
                   itemLabel: 'Controls',

@@ -149,8 +149,7 @@ class _DashboardState extends ConsumerState<Dashboard>
 
                       if (activeDevice.isNotEmpty)
                         Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
                             color: const Color(0xFF41877F), // background tile
                             borderRadius: BorderRadius.circular(8),
@@ -317,7 +316,9 @@ class _DashboardState extends ConsumerState<Dashboard>
                         );
                       }),
 
-                      const SizedBox(height: 16,),
+                      const SizedBox(
+                        height: 16,
+                      ),
                       const Divider(),
 
                       /// ADD DEVICE
@@ -571,14 +572,14 @@ class _DashboardState extends ConsumerState<Dashboard>
   }
 
   SliverToBoxAdapter _buildDeviceControlTitle(RTDBProvider rtdb) {
-    return SliverToBoxAdapter(
+    return const SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsetsGeometry.fromLTRB(20, 35, 20, 0),
+        padding: EdgeInsetsGeometry.fromLTRB(20, 35, 20, 0),
         child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 "Device Control",
                 style: TextStyle(
                     fontFamily: "PlusJakartaSans",
@@ -586,17 +587,17 @@ class _DashboardState extends ConsumerState<Dashboard>
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A)),
               ),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  "Tooltip",
-                  style: TextStyle(
-                      fontFamily: "PlusJakartaSans",
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF0F172A)),
-                ),
-              )
+              // GestureDetector(
+              //   onTap: () {},
+              //   child: const Text(
+              //     "Tooltip",
+              //     style: TextStyle(
+              //         fontFamily: "PlusJakartaSans",
+              //         fontSize: 14,
+              //         fontWeight: FontWeight.w500,
+              //         color: Color(0xFF0F172A)),
+              //   ),
+              // )
             ]),
       ),
     );
@@ -612,64 +613,97 @@ class _DashboardState extends ConsumerState<Dashboard>
               return ValueListenableBuilder<String>(
                 valueListenable: rtdb.nutrientMode,
                 builder: (_, nutrientValue, __) {
-                  if (waterValue == "auto" && nutrientValue == "auto") {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 20,
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/control_auto.png',
-                          width: double.infinity,
-                        ),
-                      ),
-                    );
-                  }
+                  return ValueListenableBuilder<String>(
+                      valueListenable: rtdb.phMode,
+                      builder: (_, phValue, __) {
+                        if (waterValue == "auto" &&
+                            nutrientValue == "auto" &&
+                            phValue == "auto") {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 20,
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/control_auto.png',
+                                width: double.infinity,
+                              ),
+                            ),
+                          );
+                        }
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (waterValue == "manual")
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: rtdb.waterController,
-                            builder: (_, isActive, __) {
-                              return ControlCard(
-                                title: "Water Pump",
-                                isActive: isActive,
-                                uptime: "",
-                                iconPath: "assets/images/water.png",
-                                bgIconColor: const Color(0xFFEFF6FF),
-                                onToggle: (value) {
-                                  ref.read(rtdbProvider).setWater(value);
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      if (nutrientValue == "manual")
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 5, 20, 0),
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: rtdb.nutrientController,
-                            builder: (_, isActive, __) {
-                              return ControlCard(
-                                title: "Nutrient Pump",
-                                isActive: isActive,
-                                uptime: "",
-                                iconPath: "assets/images/nutrient.png",
-                                bgIconColor: const Color(0xFFFBEFFF),
-                                onToggle: (value) {
-                                  ref.read(rtdbProvider).setNutrient(value);
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                    ],
-                  );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (waterValue == "manual")
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: rtdb.waterController,
+                                  builder: (_, isActive, __) {
+                                    return ControlCard(
+                                      title: "Water Pump",
+                                      isActive: isActive,
+                                      uptime: "",
+                                      iconPath: "assets/images/water.png",
+                                      bgIconColor: const Color(0xFFE2EBFF),
+                                      onToggle: (value) {
+                                        ref.read(rtdbProvider).setWater(value);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (nutrientValue == "manual")
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: rtdb.nutrientController,
+                                  builder: (_, isActive, __) {
+                                    return ControlCard(
+                                      title: "Nutrient Pump",
+                                      isActive: isActive,
+                                      uptime: "",
+                                      iconPath: "assets/images/nutrient.png",
+                                      bgIconColor: const Color(0xFFFBEFFF),
+                                      onToggle: (value) {
+                                        ref
+                                            .read(rtdbProvider)
+                                            .setNutrient(value);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (phValue == "manual")
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                child: ValueListenableBuilder<bool>(
+                                  valueListenable: rtdb.phController,
+                                  builder: (_, isActive, __) {
+                                    return ControlCard(
+                                      title: "pH Pump",
+                                      isActive: isActive,
+                                      uptime: "",
+                                      iconPath: "assets/images/ph.png",
+                                      bgIconColor: const Color(0xFFFEF3C6),
+                                      onToggle: (value) {
+                                        ref
+                                            .read(rtdbProvider)
+                                            .setPh(value);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 130,)
+                          ],
+                        );
+                      });
                 },
               );
             },

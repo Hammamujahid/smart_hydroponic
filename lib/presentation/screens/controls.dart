@@ -20,8 +20,7 @@ class _ControlsState extends ConsumerState<Controls>
   final _waterDurationController = TextEditingController();
   final _waterIntervalController = TextEditingController();
   final _nutrientThresholdMinController = TextEditingController();
-    final _phThresholdMinController = TextEditingController();
-
+  final _phThresholdMinController = TextEditingController();
 
   @override
   bool get wantKeepAlive => true;
@@ -97,7 +96,8 @@ class _ControlsState extends ConsumerState<Controls>
                                           Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEFF6FF),
+                                              color: const Color.fromARGB(
+                                                  20, 2, 73, 112),
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                             ),
@@ -135,7 +135,7 @@ class _ControlsState extends ConsumerState<Controls>
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEFF6FF),
+                                              color: const Color(0xFFE2EBFF),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                             ),
@@ -507,8 +507,37 @@ class _ControlsState extends ConsumerState<Controls>
                                                                     keyboardType1:
                                                                         TextInputType
                                                                             .number,
-                                                                    notification:
-                                                                        "Water Duration",
+                                                                    onSave:
+                                                                        (value1,
+                                                                            _) {
+                                                                      final newWaterDuration =
+                                                                          double.tryParse(
+                                                                              value1.trim());
+                                                                      if (newWaterDuration ==
+                                                                          null) {
+                                                                        return const SaveResult
+                                                                            .failed(
+                                                                            "Input harus berupa angka");
+                                                                      }
+                                                                      if (newWaterDuration ==
+                                                                          rtdb.waterDuration
+                                                                              .value) {
+                                                                        return const SaveResult
+                                                                            .failed(
+                                                                            "Durasi air sama dengan sebelumnya");
+                                                                      }
+
+                                                                      if (newWaterDuration >
+                                                                          rtdb.waterInterval
+                                                                              .value) {
+                                                                        return const SaveResult.failed(
+                                                                            "Durasi nyala air tidak boleh lebih dari durasi interval air");
+                                                                      }
+
+                                                                      return const SaveResult
+                                                                          .success(
+                                                                          "Durasi air berhasil diperbarui");
+                                                                    },
                                                                   ),
                                                                 );
 
@@ -518,24 +547,9 @@ class _ControlsState extends ConsumerState<Controls>
                                                                 }
 
                                                                 final duration =
-                                                                    double.tryParse(
+                                                                    double.parse(
                                                                         result[
                                                                             "value1"]);
-
-                                                                if (duration ==
-                                                                    null) {
-                                                                  return;
-                                                                }
-                                                                if (duration ==
-                                                                    rtdb.waterDuration
-                                                                        .value) {
-                                                                  return;
-                                                                }
-                                                                if (duration >
-                                                                    rtdb.waterInterval
-                                                                        .value) {
-                                                                  return;
-                                                                }
 
                                                                 ref
                                                                     .read(
@@ -631,8 +645,37 @@ class _ControlsState extends ConsumerState<Controls>
                                                                     keyboardType1:
                                                                         TextInputType
                                                                             .number,
-                                                                    notification:
-                                                                        "Water Interval",
+                                                                    onSave:
+                                                                        (value1,
+                                                                            _) {
+                                                                      final newWaterInterval =
+                                                                          double.tryParse(
+                                                                              value1.trim());
+                                                                      if (newWaterInterval ==
+                                                                          null) {
+                                                                        return const SaveResult
+                                                                            .failed(
+                                                                            "Input harus berupa angka");
+                                                                      }
+                                                                      if (newWaterInterval ==
+                                                                          rtdb.waterInterval
+                                                                              .value) {
+                                                                        return const SaveResult
+                                                                            .failed(
+                                                                            "Interval air sama dengan sebelumnya");
+                                                                      }
+
+                                                                      if (newWaterInterval <
+                                                                          rtdb.waterDuration
+                                                                              .value) {
+                                                                        return const SaveResult.failed(
+                                                                            "Durasi interval air tidak boleh kurang dari durasi nyala air");
+                                                                      }
+
+                                                                      return const SaveResult
+                                                                          .success(
+                                                                          "Interval air berhasil diperbarui");
+                                                                    },
                                                                   ),
                                                                 );
 
@@ -642,24 +685,9 @@ class _ControlsState extends ConsumerState<Controls>
                                                                 }
 
                                                                 final interval =
-                                                                    double.tryParse(
+                                                                    double.parse(
                                                                         result[
                                                                             "value1"]);
-
-                                                                if (interval ==
-                                                                    null) {
-                                                                  return;
-                                                                }
-                                                                if (interval ==
-                                                                    rtdb.waterInterval
-                                                                        .value) {
-                                                                  return;
-                                                                }
-                                                                if (interval <
-                                                                    rtdb.waterDuration
-                                                                        .value) {
-                                                                  return;
-                                                                }
 
                                                                 ref
                                                                     .read(
@@ -752,8 +780,7 @@ class _ControlsState extends ConsumerState<Controls>
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: const Color.fromARGB(
-                                                  20, 78, 13, 84),
+                                              color: const Color(0xFFF4DCFC),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                             ),
@@ -978,8 +1005,19 @@ class _ControlsState extends ConsumerState<Controls>
                                                               keyboardType1:
                                                                   TextInputType
                                                                       .number,
-                                                              notification:
-                                                                  "Nutrient Minimum Threshold",
+                                                              onSave: (value1, _){
+                                                                final newMin = double.tryParse(value1.trim());
+
+                                                                if(newMin == null){
+                                                                  return const SaveResult.failed("Input harus berupa angka");
+                                                                }
+
+                                                                if(newMin == rtdb.nutrientThresholdMin.value){
+                                                                  return const SaveResult.failed("Threshold minimum nutrisi sama dengan sebelumnya");
+                                                                }
+
+                                                                return const SaveResult.success("Threshold minimum nutrisi berhasil diperbarui");
+                                                              },
                                                             ),
                                                           );
 
@@ -988,17 +1026,8 @@ class _ControlsState extends ConsumerState<Controls>
                                                           }
 
                                                           final min = double
-                                                              .tryParse(result[
+                                                              .parse(result[
                                                                   "value1"]);
-
-                                                          if (min == null) {
-                                                            return;
-                                                          }
-                                                          if (min ==
-                                                              rtdb.nutrientThresholdMin
-                                                                  .value) {
-                                                            return;
-                                                          }
 
                                                           ref
                                                               .read(
@@ -1022,7 +1051,7 @@ class _ControlsState extends ConsumerState<Controls>
                                   ],
                                 ),
                               ),
-                               Container(
+                              Container(
                                 margin: const EdgeInsets.only(bottom: 25),
                                 padding: const EdgeInsets.all(10),
                                 width: double.infinity,
@@ -1049,7 +1078,8 @@ class _ControlsState extends ConsumerState<Controls>
                                           Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: const Color.fromARGB(20, 123, 51, 6),
+                                              color: const Color.fromARGB(
+                                                  20, 123, 51, 6),
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                             ),
@@ -1087,7 +1117,7 @@ class _ControlsState extends ConsumerState<Controls>
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: const Color.fromARGB(20, 123, 51, 6),
+                                              color: const Color(0xFFFEF3C6),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                             ),
@@ -1182,8 +1212,7 @@ class _ControlsState extends ConsumerState<Controls>
                                                         }
                                                         ref
                                                             .read(rtdbProvider)
-                                                            .setPhMode(
-                                                                "auto");
+                                                            .setPhMode("auto");
                                                       },
                                                       child: Container(
                                                         padding:
@@ -1312,8 +1341,19 @@ class _ControlsState extends ConsumerState<Controls>
                                                               keyboardType1:
                                                                   TextInputType
                                                                       .number,
-                                                              notification:
-                                                                  "pH Minimum Threshold",
+                                                            onSave: (value1, _){
+                                                                final newMin = double.tryParse(value1.trim());
+
+                                                                if(newMin == null){
+                                                                  return const SaveResult.failed("Input harus berupa angka");
+                                                                }
+
+                                                                if(newMin == rtdb.phThresholdMin.value){
+                                                                  return const SaveResult.failed("Threshold minimum pH sama dengan sebelumnya");
+                                                                }
+
+                                                                return const SaveResult.success("Threshold minimum pH berhasil diperbarui");
+                                                              },
                                                             ),
                                                           );
 
@@ -1322,17 +1362,8 @@ class _ControlsState extends ConsumerState<Controls>
                                                           }
 
                                                           final min = double
-                                                              .tryParse(result[
+                                                              .parse(result[
                                                                   "value1"]);
-
-                                                          if (min == null) {
-                                                            return;
-                                                          }
-                                                          if (min ==
-                                                              rtdb.phThresholdMin
-                                                                  .value) {
-                                                            return;
-                                                          }
 
                                                           ref
                                                               .read(

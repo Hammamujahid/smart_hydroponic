@@ -228,17 +228,31 @@ class _SettingsState extends ConsumerState<Settings>
                       isTwoFields: false,
                       label1: "Username",
                       controller1: _usernameController,
-                      notification: "Username",
+                      onSave: (value1, _) {
+                        final newUsername = value1.trim();
+
+                        if (newUsername.isEmpty) {
+                          return const SaveResult.failed(
+                              "Username tidak boleh kosong.");
+                        }
+                        if (newUsername.length < 3) {
+                          return const SaveResult.failed(
+                              "Username minimal 3 karakter.");
+                        }
+                        if (newUsername == user?.username) {
+                          return const SaveResult.failed(
+                              "Username sama dengan sebelumnya.");
+                        }
+
+                        return const SaveResult.success(
+                            "Username berhasil diperbarui.");
+                      },
                     ),
                   );
 
                   if (result == null) return;
 
                   final newUsername = (result["value1"] as String).trim();
-
-                  if (newUsername.isEmpty || newUsername == user?.username) {
-                    return;
-                  }
 
                   await ref
                       .read(userProvider)
@@ -298,7 +312,9 @@ class _SettingsState extends ConsumerState<Settings>
                   ),
                   const SizedBox(height: 5),
                   Text(
-                (device?.title?.isNotEmpty ?? false) ? device!.title! : "No Title",
+                    (device?.title?.isNotEmpty ?? false)
+                        ? device!.title!
+                        : "No Title",
                     style: const TextStyle(
                         fontWeight: FontWeight.w400,
                         fontFamily: "PlusJakartaSans",
@@ -317,15 +333,23 @@ class _SettingsState extends ConsumerState<Settings>
                       isTwoFields: false,
                       label1: "Plant",
                       controller1: _plantController,
-                      notification: "Plant",
+                      onSave: (value1, _) {
+                        final newPlant = value1.trim();
+
+                        if (newPlant == device?.title) {
+                          return const SaveResult.failed(
+                              "Jenis tanaman sama dengan sebelumnya");
+                        }
+
+                        return const SaveResult.success(
+                            "Jenis tanaman berhasil diperbarui");
+                      },
                     ),
                   );
 
                   if (result == null) return;
 
                   final newPlant = result["value1"];
-
-                  if (newPlant == device?.title) return;
 
                   await ref
                       .read(deviceProvider)
@@ -397,16 +421,27 @@ class _SettingsState extends ConsumerState<Settings>
                         label1: "Water Max",
                         controller1: _waterMaxController,
                         keyboardType1: TextInputType.number,
-                        notification: "Water Max",
+                        onSave: (value1, _) {
+                          final newWaterMax = double.tryParse(value1.trim());
+
+                          if (newWaterMax == null) {
+                            return const SaveResult.failed(
+                                "Input harus berupa angka");
+                          }
+                          if (newWaterMax == rtdb.waterMax.value) {
+                            return const SaveResult.failed(
+                                "Tinggi maksimal air sama dengan sebelumnya");
+                          }
+
+                          return const SaveResult.success(
+                              "Tinggi maksimal air berhasil diperbarui");
+                        },
                       ),
                     );
-
                     if (result == null) return;
 
-                    final value = double.tryParse(result["value1"]);
-
-                    if (value == null) return;
-                    if (value == rtdb.waterMax.value) return;
+                    final value = double.parse(result[
+                        "value1"]);
 
                     ref.read(rtdbProvider).setWaterMax(value);
                   },
@@ -417,7 +452,6 @@ class _SettingsState extends ConsumerState<Settings>
                 )
               ],
             )),
-      
       ],
     );
   }
