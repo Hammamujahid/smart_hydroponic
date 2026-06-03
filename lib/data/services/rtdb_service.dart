@@ -6,10 +6,14 @@ class RTDBService {
 
   RTDBService(this.deviceId);
 
-  static final FirebaseDatabase _db = FirebaseDatabase.instanceFor(
+  static FirebaseDatabase? _dbInstance;
+  static FirebaseDatabase get _db {
+    _dbInstance ??= FirebaseDatabase.instanceFor(
       app: Firebase.app(),
-      databaseURL:
-          "https://smart-hydroponic-14bcf-default-rtdb.asia-southeast1.firebasedatabase.app/");
+      databaseURL: "https://smart-hydroponic-14bcf-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    );
+    return _dbInstance!;
+  }
 
   // ========== Cek Device ==========
   static Future<bool> deviceExists(String deviceId) async {
@@ -19,17 +23,178 @@ class RTDBService {
 
   // ========== Device Status ==========
   DatabaseReference get _statusDevice => _db.ref("devices/$deviceId/last_seen");
-
   DatabaseReference get _waterMaxRef => _db.ref("devices/$deviceId/water_max");
+  DatabaseReference get _tdsRef => _db.ref("devices/$deviceId/tds/");
+  DatabaseReference get _phRef => _db.ref("devices/$deviceId/ph/");
 
   Stream<int> getDeviceStatusStream() {
     return _statusDevice.onValue
         .map((event) => event.snapshot.value as int? ?? 0);
   }
 
+  Stream<bool> getTdsBufferAModeStream() {
+    return _tdsRef
+        .child("bufferA/mode")
+        .onValue
+        .map((event) => event.snapshot.value as bool? ?? false);
+  }
+
+  Stream<double> getTdsBufferAVoltageStream() {
+    return _tdsRef
+        .child("bufferA/voltage")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getTdsBufferAValueStream() {
+    return _tdsRef
+        .child("bufferA/value")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<bool> getTdsBufferBModeStream() {
+    return _tdsRef
+        .child("bufferB/mode")
+        .onValue
+        .map((event) => event.snapshot.value as bool? ?? false);
+  }
+
+  Stream<double> getTdsBufferBVoltageStream() {
+    return _tdsRef
+        .child("bufferB/voltage")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getTdsBufferBValueStream() {
+    return _tdsRef
+        .child("bufferB/value")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getTdsGradientStream() {
+    return _tdsRef
+        .child("gradient")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getTdsConstantaStream() {
+    return _tdsRef
+        .child("konstanta")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<bool> getPhBufferAModeStream() {
+    return _phRef
+        .child("bufferA/mode")
+        .onValue
+        .map((event) => event.snapshot.value as bool? ?? false);
+  }
+
+  Stream<double> getPhBufferAVoltageStream() {
+    return _phRef
+        .child("bufferA/voltage")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getPhBufferAValueStream() {
+    return _phRef
+        .child("bufferA/value")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<bool> getPhBufferBModeStream() {
+    return _phRef
+        .child("bufferB/mode")
+        .onValue
+        .map((event) => event.snapshot.value as bool? ?? false);
+  }
+
+  Stream<double> getPhBufferBVoltageStream() {
+    return _phRef
+        .child("bufferB/voltage")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getPhBufferBValueStream() {
+    return _phRef
+        .child("bufferB/value")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getPhGradientStream() {
+    return _phRef
+        .child("gradient")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Stream<double> getPhConstantaStream() {
+    return _phRef
+        .child("konstanta")
+        .onValue
+        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
   Stream<double> getWaterMaxStream() {
     return _waterMaxRef.onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
+  }
+
+  Future<void> setTdsBufferAMode(bool value) async {
+    await _tdsRef.child("bufferA/mode").set(value);
+  }
+
+  Future<void> setTdsBufferAValue(double value) async {
+    await _tdsRef.child("bufferA/value").set(value);
+  }
+
+  Future<void> setTdsBufferBMode(bool value) async {
+    await _tdsRef.child("bufferB/mode").set(value);
+  }
+
+  Future<void> setTdsBufferBValue(double value) async {
+    await _tdsRef.child("bufferB/value").set(value);
+  }
+
+  Future<void> setTdsGradient(double value) async {
+    await _tdsRef.child("gradien").set(value);
+  }
+
+  Future<void> setTdsConstanta(double value) async {
+    await _tdsRef.child("konstanta").set(value);
+  }
+
+  Future<void> setPhBufferAMode(bool value) async {
+    await _phRef.child("bufferA/mode").set(value);
+  }
+
+  Future<void> setPhBufferAValue(double value) async {
+    await _phRef.child("bufferA/value").set(value);
+  }
+
+  Future<void> setPhBufferBMode(bool value) async {
+    await _phRef.child("bufferB/mode").set(value);
+  }
+
+  Future<void> setPhBufferBValue(double value) async {
+    await _phRef.child("bufferB/value").set(value);
+  }
+
+  Future<void> setPhGradient(double value) async {
+    await _phRef.child("gradien").set(value);
+  }
+
+  Future<void> setPhConstanta(double value) async {
+    await _phRef.child("konstanta").set(value);
   }
 
   Future<void> setWaterMax(double value) async {
@@ -92,9 +257,6 @@ class RTDBService {
   DatabaseReference get _nutrientThresholdMinRef =>
       _db.ref("control/$deviceId/nutrient/tds_min");
 
-  DatabaseReference get _nutrientThresholdMaxRef =>
-      _db.ref("control/$deviceId/nutrient/tds_max");
-
   DatabaseReference get _nutrientModeRef =>
       _db.ref("control/$deviceId/nutrient/mode");
 
@@ -108,12 +270,7 @@ class RTDBService {
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
-  Stream<double> getNutrientThresholdMaxStream() {
-    return _nutrientThresholdMaxRef.onValue
-        .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
-  }
-
-  Stream<String> getNutrientModeStream(){
+  Stream<String> getNutrientModeStream() {
     return _nutrientModeRef.onValue
         .map((event) => event.snapshot.value as String? ?? "manual");
   }
@@ -130,10 +287,6 @@ class RTDBService {
     await _nutrientThresholdMinRef.set(value);
   }
 
-  Future<void> setNutrientThresholdMax(double value) async {
-    await _nutrientThresholdMaxRef.set(value);
-  }
-
   // ========== pH Controller ==========
   DatabaseReference get _phControllerRef =>
       _db.ref("control/$deviceId/ph/isActived");
@@ -141,8 +294,7 @@ class RTDBService {
   DatabaseReference get _phThresholdMinRef =>
       _db.ref("control/$deviceId/ph/ph_min");
 
-  DatabaseReference get _phModeRef =>
-      _db.ref("control/$deviceId/ph/mode");
+  DatabaseReference get _phModeRef => _db.ref("control/$deviceId/ph/mode");
 
   Stream<bool> getPhControllerStream() {
     return _phControllerRef.onValue
@@ -154,7 +306,7 @@ class RTDBService {
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
 
-  Stream<String> getPhModeStream(){
+  Stream<String> getPhModeStream() {
     return _phModeRef.onValue
         .map((event) => event.snapshot.value as String? ?? "manual");
   }

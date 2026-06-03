@@ -305,10 +305,8 @@ class _ControlsState extends ConsumerState<Controls>
                                                               BorderRadius
                                                                   .circular(12),
                                                         ),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                        child: Column(
+                                                          spacing: 6,
                                                           children: [
                                                             const Row(
                                                               children: [
@@ -530,7 +528,8 @@ class _ControlsState extends ConsumerState<Controls>
                                                                       if (newWaterDuration >
                                                                           rtdb.waterInterval
                                                                               .value) {
-                                                                        return const SaveResult.failed(
+                                                                        return const SaveResult
+                                                                            .failed(
                                                                             "Durasi nyala air tidak boleh lebih dari durasi interval air");
                                                                       }
 
@@ -668,7 +667,8 @@ class _ControlsState extends ConsumerState<Controls>
                                                                       if (newWaterInterval <
                                                                           rtdb.waterDuration
                                                                               .value) {
-                                                                        return const SaveResult.failed(
+                                                                        return const SaveResult
+                                                                            .failed(
                                                                             "Durasi interval air tidak boleh kurang dari durasi nyala air");
                                                                       }
 
@@ -1005,18 +1005,31 @@ class _ControlsState extends ConsumerState<Controls>
                                                               keyboardType1:
                                                                   TextInputType
                                                                       .number,
-                                                              onSave: (value1, _){
-                                                                final newMin = double.tryParse(value1.trim());
+                                                              onSave:
+                                                                  (value1, _) {
+                                                                final newMin =
+                                                                    double.tryParse(
+                                                                        value1
+                                                                            .trim());
 
-                                                                if(newMin == null){
-                                                                  return const SaveResult.failed("Input harus berupa angka");
+                                                                if (newMin ==
+                                                                    null) {
+                                                                  return const SaveResult
+                                                                      .failed(
+                                                                      "Input harus berupa angka");
                                                                 }
 
-                                                                if(newMin == rtdb.nutrientThresholdMin.value){
-                                                                  return const SaveResult.failed("Threshold minimum nutrisi sama dengan sebelumnya");
+                                                                if (newMin ==
+                                                                    rtdb.nutrientThresholdMin
+                                                                        .value) {
+                                                                  return const SaveResult
+                                                                      .failed(
+                                                                      "Threshold minimum nutrisi sama dengan sebelumnya");
                                                                 }
 
-                                                                return const SaveResult.success("Threshold minimum nutrisi berhasil diperbarui");
+                                                                return const SaveResult
+                                                                    .success(
+                                                                    "Threshold minimum nutrisi berhasil diperbarui");
                                                               },
                                                             ),
                                                           );
@@ -1341,18 +1354,31 @@ class _ControlsState extends ConsumerState<Controls>
                                                               keyboardType1:
                                                                   TextInputType
                                                                       .number,
-                                                            onSave: (value1, _){
-                                                                final newMin = double.tryParse(value1.trim());
+                                                              onSave:
+                                                                  (value1, _) {
+                                                                final newMin =
+                                                                    double.tryParse(
+                                                                        value1
+                                                                            .trim());
 
-                                                                if(newMin == null){
-                                                                  return const SaveResult.failed("Input harus berupa angka");
+                                                                if (newMin ==
+                                                                    null) {
+                                                                  return const SaveResult
+                                                                      .failed(
+                                                                      "Input harus berupa angka");
                                                                 }
 
-                                                                if(newMin == rtdb.phThresholdMin.value){
-                                                                  return const SaveResult.failed("Threshold minimum pH sama dengan sebelumnya");
+                                                                if (newMin ==
+                                                                    rtdb.phThresholdMin
+                                                                        .value) {
+                                                                  return const SaveResult
+                                                                      .failed(
+                                                                      "Threshold minimum pH sama dengan sebelumnya");
                                                                 }
 
-                                                                return const SaveResult.success("Threshold minimum pH berhasil diperbarui");
+                                                                return const SaveResult
+                                                                    .success(
+                                                                    "Threshold minimum pH berhasil diperbarui");
                                                               },
                                                             ),
                                                           );

@@ -24,7 +24,6 @@ class RTDBProvider extends ChangeNotifier {
   StreamSubscription? _phSub;
   StreamSubscription? _waterLevelSub;
   StreamSubscription? _nutrientThresholdMinSub;
-  StreamSubscription? _nutrientThresholdMaxSub;
   StreamSubscription? _phThresholdMinSub;
   StreamSubscription? _waterIntervalSub;
   StreamSubscription? _waterDurationSub;
@@ -38,7 +37,6 @@ class RTDBProvider extends ChangeNotifier {
   final ValueNotifier<bool> nutrientController = ValueNotifier<bool>(false);
   final ValueNotifier<String> nutrientMode = ValueNotifier<String>("manual");
   final ValueNotifier<double> nutrientThresholdMin = ValueNotifier<double>(0.0);
-  final ValueNotifier<double> nutrientThresholdMax = ValueNotifier<double>(0.0);
 
   final ValueNotifier<bool> phController = ValueNotifier<bool>(false);
   final ValueNotifier<String> phMode = ValueNotifier<String>("manual");
@@ -92,11 +90,6 @@ class RTDBProvider extends ChangeNotifier {
     _nutrientThresholdMinSub =
         _rtdb!.getNutrientThresholdMinStream().listen((v) {
       nutrientThresholdMin.value = v;
-    });
-
-    _nutrientThresholdMaxSub =
-        _rtdb!.getNutrientThresholdMaxStream().listen((v) {
-      nutrientThresholdMax.value = v;
     });
 
 //
@@ -176,11 +169,6 @@ class RTDBProvider extends ChangeNotifier {
     _rtdb?.setNutrientThresholdMin(value);
   }
 
-  void setThresholdMaxNutrient(double value) {
-    nutrientThresholdMax.value = value;
-    _rtdb?.setNutrientThresholdMax(value);
-  }
-
   void setPh(bool value) {
     phController.value = value;
     _rtdb?.setPhController(value);
@@ -212,7 +200,6 @@ class RTDBProvider extends ChangeNotifier {
     _nutrientCtrlSub?.cancel();
     _nutrientModeSub?.cancel();
     _nutrientThresholdMinSub?.cancel();
-    _nutrientThresholdMaxSub?.cancel();
     _phCtrlSub?.cancel();
     _phModeSub?.cancel();
     _phThresholdMinSub?.cancel();
@@ -232,7 +219,6 @@ class RTDBProvider extends ChangeNotifier {
     _phCtrlSub = null;
     _phModeSub = null;
     _phThresholdMinSub = null;
-    _nutrientThresholdMaxSub = null;
     _tdsSub = null;
     _phSub = null;
     _waterLevelSub = null;

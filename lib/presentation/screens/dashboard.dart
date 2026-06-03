@@ -7,6 +7,7 @@ import 'package:smart_hydroponic/presentation/providers/auth_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/device_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/rtdb_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
+import 'package:smart_hydroponic/presentation/screens/calibration.dart';
 import 'package:smart_hydroponic/presentation/widgets/control_card.dart';
 import 'package:smart_hydroponic/presentation/widgets/qr_scanner.dart';
 import 'package:smart_hydroponic/presentation/widgets/sensor_card.dart';
@@ -466,44 +467,49 @@ class _DashboardState extends ConsumerState<Dashboard>
                   fontWeight: FontWeight.w700),
             ),
             SizedBox(
-                child: ValueListenableBuilder<int>(
-              valueListenable: rtdb.deviceStatus,
-              builder: (context, value, child) {
-                // waktu sekarang
-                int nowMillis = DateTime.now().millisecondsSinceEpoch;
+                child: StreamBuilder(
+                    stream: Stream.periodic(const Duration(seconds: 1)),
+                    builder: (context, snapshot) {
+                      return ValueListenableBuilder<int>(
+                        valueListenable: rtdb.deviceStatus,
+                        builder: (context, value, child) {
+                          // waktu sekarang
+                          int nowMillis = DateTime.now().millisecondsSinceEpoch;
 
-                // selisih dalam millisecond
-                int diffMillis = nowMillis - value;
+                          // selisih dalam millisecond
+                          int diffMillis = nowMillis - value;
 
-                // jika selisih > 5 menit → offline
-                bool isOnline = diffMillis < 5 * 60 * 1000;
+                          // jika selisih > 2 menit → offline
+                          bool isOnline = diffMillis < 2 * 60 * 1000;
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      color: isOnline
-                          ? const Color(0xFF059669)
-                          : const Color(0xFF990003),
-                      size: 12,
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
-                    Text(isOnline ? "System Online" : "System Offline",
-                        style: TextStyle(
-                          color: isOnline
-                              ? const Color(0xFF059669)
-                              : const Color(0xFF990003),
-                          fontSize: 14,
-                          fontFamily: "PlusJakartaSans",
-                          fontWeight: FontWeight.w500,
-                        ))
-                  ],
-                );
-              },
-            ))
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                color: isOnline
+                                    ? const Color(0xFF059669)
+                                    : const Color(0xFF990003),
+                                size: 12,
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Text(
+                                  isOnline ? "System Online" : "System Offline",
+                                  style: TextStyle(
+                                    color: isOnline
+                                        ? const Color(0xFF059669)
+                                        : const Color(0xFF990003),
+                                    fontSize: 14,
+                                    fontFamily: "PlusJakartaSans",
+                                    fontWeight: FontWeight.w500,
+                                  ))
+                            ],
+                          );
+                        },
+                      );
+                    }))
           ],
         ),
       ),
@@ -525,30 +531,52 @@ class _DashboardState extends ConsumerState<Dashboard>
                 ValueListenableBuilder<double>(
                   valueListenable: rtdb.nutrientLevel,
                   builder: (_, value, __) {
-                    return SensorCard(
-                      title: 'Nutrient Level',
-                      value: value.toStringAsFixed(2),
-                      unit: 'ppm',
-                      status: 'Normal',
-                      bgStatusColor: const Color(0xFFF4DCFC),
-                      iconPath: 'assets/images/nutrient.png',
-                      bgIconColor: const Color.fromARGB(20, 78, 13, 84),
-                      statusColor: const Color(0xFFA6009B),
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const Calibration(),
+                          ),
+                        );
+                      },
+                      child: SensorCard(
+                        title: 'Nutrient Level',
+                        value: value.toStringAsFixed(2),
+                        unit: 'ppm',
+                        status: 'Normal',
+                        bgStatusColor: const Color(0xFFF4DCFC),
+                        iconPath: 'assets/images/nutrient.png',
+                        bgIconColor: const Color.fromARGB(20, 78, 13, 84),
+                        statusColor: const Color(0xFFA6009B),
+                      ),
                     );
                   },
                 ),
                 ValueListenableBuilder<double>(
                   valueListenable: rtdb.phLevel,
                   builder: (_, value, __) {
-                    return SensorCard(
-                      title: 'pH Level',
-                      value: value.toStringAsFixed(2),
-                      unit: 'pH',
-                      status: 'Normal',
-                      bgStatusColor: const Color(0xFFFEF3C6),
-                      iconPath: 'assets/images/ph.png',
-                      bgIconColor: const Color.fromARGB(20, 123, 51, 6),
-                      statusColor: const Color(0xFFBB4D00),
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const Calibration(),
+                          ),
+                        );
+                      },
+                      child: SensorCard(
+                        title: 'pH Level',
+                        value: value.toStringAsFixed(2),
+                        unit: 'pH',
+                        status: 'Normal',
+                        bgStatusColor: const Color(0xFFFEF3C6),
+                        iconPath: 'assets/images/ph.png',
+                        bgIconColor: const Color.fromARGB(20, 123, 51, 6),
+                        statusColor: const Color(0xFFBB4D00),
+                      ),
                     );
                   },
                 ),
@@ -587,17 +615,6 @@ class _DashboardState extends ConsumerState<Dashboard>
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A)),
               ),
-              // GestureDetector(
-              //   onTap: () {},
-              //   child: const Text(
-              //     "Tooltip",
-              //     style: TextStyle(
-              //         fontFamily: "PlusJakartaSans",
-              //         fontSize: 14,
-              //         fontWeight: FontWeight.w500,
-              //         color: Color(0xFF0F172A)),
-              //   ),
-              // )
             ]),
       ),
     );
@@ -692,15 +709,15 @@ class _DashboardState extends ConsumerState<Dashboard>
                                       iconPath: "assets/images/ph.png",
                                       bgIconColor: const Color(0xFFFEF3C6),
                                       onToggle: (value) {
-                                        ref
-                                            .read(rtdbProvider)
-                                            .setPh(value);
+                                        ref.read(rtdbProvider).setPh(value);
                                       },
                                     );
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 130,)
+                            const SizedBox(
+                              height: 130,
+                            )
                           ],
                         );
                       });

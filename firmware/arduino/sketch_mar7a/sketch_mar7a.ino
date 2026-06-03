@@ -191,27 +191,27 @@ void handleNutrientPump() {
 
   if (mode == "manual") {
 
-    // if (isActived) {
-    //   if (!nutPumpRunning && (now - lastNutPumpStart >= nutPumpInterval || lastNutPumpStart == 0)) {
-    //     digitalWrite(RELAY_NUTRIENT, LOW);
-    //     nutPumpRunning = true;
-    //     lastNutPumpStart = now;
-    //   }
+    if (isActived) {
+      if (!nutPumpRunning && (now - lastNutPumpStart >= nutPumpInterval || lastNutPumpStart == 0)) {
+        digitalWrite(RELAY_NUTRIENT, LOW);
+        nutPumpRunning = true;
+        lastNutPumpStart = now;
+      }
 
-    //   if (nutPumpRunning && now - lastNutPumpStart >= nutPumpDuration) {
-    //     digitalWrite(RELAY_NUTRIENT, HIGH);
-    //     nutPumpRunning = false;
-    //     lastNutPumpStart = now;
-    //   }
+      if (nutPumpRunning && now - lastNutPumpStart >= nutPumpDuration) {
+        digitalWrite(RELAY_NUTRIENT, HIGH);
+        nutPumpRunning = false;
+        lastNutPumpStart = now;
+      }
 
-    // } else {
-    //   digitalWrite(RELAY_NUTRIENT, HIGH);
-    //   nutPumpRunning = false;
-    //   lastNutPumpStart = now;
-    // }
+    } else {
+      digitalWrite(RELAY_NUTRIENT, HIGH);
+      nutPumpRunning = false;
+      lastNutPumpStart = now;
+    }
 
-    digitalWrite(RELAY_NUTRIENT, isActived ? LOW : HIGH);
-    nutPumpRunning = isActived;
+    // digitalWrite(RELAY_NUTRIENT, isActived ? LOW : HIGH);
+    // nutPumpRunning = isActived;
 
     return;
   }
@@ -260,8 +260,27 @@ void handlePhPump() {
   }
 
   if (mode == "manual") {
-    digitalWrite(RELAY_PH, isActived ? LOW : HIGH);
-    phPumpRunning = isActived;
+    
+    if (isActived) {
+      if (!phPumpRunning && (now - lastPhPumpStart >= phPumpInterval || lastPhPumpStart == 0)) {
+        digitalWrite(RELAY_PH, LOW);
+        phPumpRunning = true;
+        lastPhPumpStart = now;
+      }
+
+      if (phPumpRunning && now - lastPhPumpStart >= phPumpDuration) {
+        digitalWrite(RELAY_PH, HIGH);
+        phPumpRunning = false;
+        lastPhPumpStart = now;
+      }
+
+    } else {
+      digitalWrite(RELAY_PH, HIGH);
+      phPumpRunning = false;
+      lastPhPumpStart = now;
+    }
+    // digitalWrite(RELAY_PH, isActived ? LOW : HIGH);
+    // phPumpRunning = isActived;
     return;
   }
 
