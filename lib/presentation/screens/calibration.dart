@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_hydroponic/presentation/providers/calibration_provider.dart';
+import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 import 'package:smart_hydroponic/presentation/widgets/rotating_icon_button.dart';
 
 class Calibration extends ConsumerStatefulWidget {
@@ -11,6 +12,18 @@ class Calibration extends ConsumerStatefulWidget {
 }
 
 class _CalibrationState extends ConsumerState<Calibration> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Ambil deviceId dari userProvider
+      final deviceId = ref.read(userProvider).selectedUser?.activeDeviceId;
+      if (deviceId != null && deviceId.isNotEmpty) {
+        ref.read(calibrationProvider).init(deviceId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +44,8 @@ class _CalibrationState extends ConsumerState<Calibration> {
                     child: Row(
                   children: [
                     ValueListenableBuilder<double>(
-                      valueListenable: ref.watch(calibrationProvider).tdsBufferAValue,
+                      valueListenable:
+                          ref.watch(calibrationProvider).tdsBufferAValue,
                       builder: (context, value, child) {
                         return Text(value.toStringAsFixed(2)); //Value Buffer A
                       },
@@ -47,7 +61,8 @@ class _CalibrationState extends ConsumerState<Calibration> {
                   ],
                 )),
                 ValueListenableBuilder<bool>(
-                  valueListenable: ref.watch(calibrationProvider).tdsBufferAMode,
+                  valueListenable:
+                      ref.watch(calibrationProvider).tdsBufferAMode,
                   builder: (context, value, child) {
                     return RotatingIconButton(
                       isLoading: value,
@@ -66,7 +81,8 @@ class _CalibrationState extends ConsumerState<Calibration> {
                     child: Row(
                   children: [
                     ValueListenableBuilder<double>(
-                      valueListenable: ref.watch(calibrationProvider).tdsBufferBValue,
+                      valueListenable:
+                          ref.watch(calibrationProvider).tdsBufferBValue,
                       builder: (context, value, child) {
                         return Text(value.toStringAsFixed(2)); //Value Buffer B
                       },
@@ -82,7 +98,8 @@ class _CalibrationState extends ConsumerState<Calibration> {
                   ],
                 )),
                 ValueListenableBuilder<bool>(
-                  valueListenable: ref.watch(calibrationProvider).tdsBufferBMode,
+                  valueListenable:
+                      ref.watch(calibrationProvider).tdsBufferBMode,
                   builder: (context, value, child) {
                     return RotatingIconButton(
                       isLoading: value,
