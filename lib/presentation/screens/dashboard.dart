@@ -531,52 +531,30 @@ class _DashboardState extends ConsumerState<Dashboard>
                 ValueListenableBuilder<double>(
                   valueListenable: rtdb.nutrientLevel,
                   builder: (_, value, __) {
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const Calibration(),
-                          ),
-                        );
-                      },
-                      child: SensorCard(
-                        title: 'Nutrient Level',
-                        value: value.toStringAsFixed(2),
-                        unit: 'ppm',
-                        status: 'Normal',
-                        bgStatusColor: const Color(0xFFF4DCFC),
-                        iconPath: 'assets/images/nutrient.png',
-                        bgIconColor: const Color.fromARGB(20, 78, 13, 84),
-                        statusColor: const Color(0xFFA6009B),
-                      ),
+                    return SensorCard(
+                      title: 'Nutrient Level',
+                      value: value.toStringAsFixed(2),
+                      unit: 'ppm',
+                      status: 'Normal',
+                      bgStatusColor: const Color(0xFFF4DCFC),
+                      iconPath: 'assets/images/nutrient.png',
+                      bgIconColor: const Color.fromARGB(20, 78, 13, 84),
+                      statusColor: const Color(0xFFA6009B),
                     );
                   },
                 ),
                 ValueListenableBuilder<double>(
                   valueListenable: rtdb.phLevel,
                   builder: (_, value, __) {
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const Calibration(),
-                          ),
-                        );
-                      },
-                      child: SensorCard(
-                        title: 'pH Level',
-                        value: value.toStringAsFixed(2),
-                        unit: 'pH',
-                        status: 'Normal',
-                        bgStatusColor: const Color(0xFFFEF3C6),
-                        iconPath: 'assets/images/ph.png',
-                        bgIconColor: const Color.fromARGB(20, 123, 51, 6),
-                        statusColor: const Color(0xFFBB4D00),
-                      ),
+                    return SensorCard(
+                      title: 'pH Level',
+                      value: value.toStringAsFixed(2),
+                      unit: 'pH',
+                      status: 'Normal',
+                      bgStatusColor: const Color(0xFFFEF3C6),
+                      iconPath: 'assets/images/ph.png',
+                      bgIconColor: const Color.fromARGB(20, 123, 51, 6),
+                      statusColor: const Color(0xFFBB4D00),
                     );
                   },
                 ),
@@ -595,6 +573,48 @@ class _DashboardState extends ConsumerState<Dashboard>
                     );
                   },
                 ),
+                InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const Calibration(),
+                      ),
+                    );
+                  },
+                  child: Center(
+                    child: Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.tune_rounded,
+                            size: 40,
+                            color: Color(0xFF64748B),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Calibration",
+                            style: TextStyle(
+                              fontFamily: "PlusJakartaSans",
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
               ],
             )));
   }

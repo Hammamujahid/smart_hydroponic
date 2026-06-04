@@ -41,7 +41,7 @@ class RTDBService {
 
   Stream<double> getTdsBufferAVoltageStream() {
     return _tdsRef
-        .child("bufferA/voltage")
+        .child("bufferA/tegangan")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
@@ -62,7 +62,7 @@ class RTDBService {
 
   Stream<double> getTdsBufferBVoltageStream() {
     return _tdsRef
-        .child("bufferB/voltage")
+        .child("bufferB/tegangan")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
@@ -76,7 +76,7 @@ class RTDBService {
 
   Stream<double> getTdsGradientStream() {
     return _tdsRef
-        .child("gradient")
+        .child("gradien")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
@@ -97,7 +97,7 @@ class RTDBService {
 
   Stream<double> getPhBufferAVoltageStream() {
     return _phRef
-        .child("bufferA/voltage")
+        .child("bufferA/tegangan")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
@@ -118,7 +118,7 @@ class RTDBService {
 
   Stream<double> getPhBufferBVoltageStream() {
     return _phRef
-        .child("bufferB/voltage")
+        .child("bufferB/tegangan")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
@@ -132,7 +132,7 @@ class RTDBService {
 
   Stream<double> getPhGradientStream() {
     return _phRef
-        .child("gradient")
+        .child("gradien")
         .onValue
         .map((event) => (event.snapshot.value as num?)?.toDouble() ?? 0.0);
   }
