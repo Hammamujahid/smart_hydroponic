@@ -936,124 +936,182 @@ class _ControlsState extends ConsumerState<Controls>
                                                       .symmetric(
                                                       vertical: 8.0,
                                                       horizontal: 16.0),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
-                                                      Column(
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 10),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: const Color(
+                                                              0xFFF4DCFC),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                        ),
+                                                        child: const Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Icon(
+                                                                Icons
+                                                                    .info_outline,
+                                                                size: 14,
+                                                                color: Color(
+                                                                    0xFFA6009B)),
+                                                            SizedBox(width: 6),
+                                                            Expanded(
+                                                              child: Text(
+                                                                "Rekomendasi: 560 - 840 ppm untuk sebagian besar tanaman sayuran daun",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 11,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color: Color(
+                                                                      0xFFA6009B),
+                                                                  fontFamily:
+                                                                      "PlusJakartaSans",
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 12),
+                                                      Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                                .spaceBetween,
                                                         children: [
-                                                          const Text(
-                                                            "Set Minimum Threshold:",
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                fontFamily:
-                                                                    "PlusJakartaSans",
-                                                                fontSize: 14),
-                                                          ),
-                                                          ValueListenableBuilder<
-                                                              double>(
-                                                            valueListenable: rtdb
-                                                                .nutrientThresholdMin,
-                                                            builder:
-                                                                (_, value, __) {
-                                                              return Text(
-                                                                "${value.toStringAsFixed(0)} ppm",
-                                                                style: const TextStyle(
+                                                          Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const Text(
+                                                                "Set Minimum Threshold:",
+                                                                style: TextStyle(
                                                                     fontWeight:
                                                                         FontWeight
-                                                                            .w400,
+                                                                            .w500,
                                                                     fontFamily:
                                                                         "PlusJakartaSans",
                                                                     fontSize:
                                                                         14),
+                                                              ),
+                                                              ValueListenableBuilder<
+                                                                  double>(
+                                                                valueListenable:
+                                                                    rtdb.nutrientThresholdMin,
+                                                                builder: (_,
+                                                                    value, __) {
+                                                                  return Text(
+                                                                    "${value.toStringAsFixed(0)} ppm",
+                                                                    style: const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w400,
+                                                                        fontFamily:
+                                                                            "PlusJakartaSans",
+                                                                        fontSize:
+                                                                            14),
+                                                                  );
+                                                                },
+                                                              )
+                                                            ],
+                                                          ),
+                                                          IconButton(
+                                                            onPressed:
+                                                                () async {
+                                                              _nutrientThresholdMinController
+                                                                      .text =
+                                                                  rtdb.nutrientThresholdMin
+                                                                      .value
+                                                                      .toStringAsFixed(
+                                                                          0);
+
+                                                              final result =
+                                                                  await showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder: (_) =>
+                                                                    EditDialogPopup(
+                                                                  title:
+                                                                      "Edit Nutrient Threshold",
+                                                                  isTwoFields:
+                                                                      false,
+                                                                  label1:
+                                                                      "Min Threshold",
+                                                                  controller1:
+                                                                      _nutrientThresholdMinController,
+                                                                  keyboardType1:
+                                                                      TextInputType
+                                                                          .number,
+                                                                  onSave:
+                                                                      (value1,
+                                                                          _) {
+                                                                    final newMin =
+                                                                        double.tryParse(
+                                                                            value1.trim());
+
+                                                                    if (newMin ==
+                                                                        null) {
+                                                                      return const SaveResult
+                                                                          .failed(
+                                                                          "Input harus berupa angka");
+                                                                    }
+
+                                                                    if (newMin ==
+                                                                        rtdb.nutrientThresholdMin
+                                                                            .value) {
+                                                                      return const SaveResult
+                                                                          .failed(
+                                                                          "Threshold minimum nutrisi sama dengan sebelumnya");
+                                                                    }
+
+                                                                    return const SaveResult
+                                                                        .success(
+                                                                        "Threshold minimum nutrisi berhasil diperbarui");
+                                                                  },
+                                                                ),
                                                               );
+
+                                                              if (result ==
+                                                                  null) {
+                                                                return;
+                                                              }
+
+                                                              final min = double
+                                                                  .parse(result[
+                                                                      "value1"]);
+
+                                                              ref
+                                                                  .read(
+                                                                      rtdbProvider)
+                                                                  .setThresholdMinNutrient(
+                                                                      min);
                                                             },
+                                                            icon: const Icon(
+                                                              Icons.edit,
+                                                              color: Color(
+                                                                  0xFF64748B),
+                                                            ),
                                                           )
                                                         ],
                                                       ),
-                                                      IconButton(
-                                                        onPressed: () async {
-                                                          _nutrientThresholdMinController
-                                                                  .text =
-                                                              rtdb.nutrientThresholdMin
-                                                                  .value
-                                                                  .toStringAsFixed(
-                                                                      0);
-
-                                                          final result =
-                                                              await showDialog(
-                                                            context: context,
-                                                            builder: (_) =>
-                                                                EditDialogPopup(
-                                                              title:
-                                                                  "Edit Nutrient Threshold",
-                                                              isTwoFields:
-                                                                  false,
-                                                              label1:
-                                                                  "Min Threshold",
-                                                              controller1:
-                                                                  _nutrientThresholdMinController,
-                                                              keyboardType1:
-                                                                  TextInputType
-                                                                      .number,
-                                                              onSave:
-                                                                  (value1, _) {
-                                                                final newMin =
-                                                                    double.tryParse(
-                                                                        value1
-                                                                            .trim());
-
-                                                                if (newMin ==
-                                                                    null) {
-                                                                  return const SaveResult
-                                                                      .failed(
-                                                                      "Input harus berupa angka");
-                                                                }
-
-                                                                if (newMin ==
-                                                                    rtdb.nutrientThresholdMin
-                                                                        .value) {
-                                                                  return const SaveResult
-                                                                      .failed(
-                                                                      "Threshold minimum nutrisi sama dengan sebelumnya");
-                                                                }
-
-                                                                return const SaveResult
-                                                                    .success(
-                                                                    "Threshold minimum nutrisi berhasil diperbarui");
-                                                              },
-                                                            ),
-                                                          );
-
-                                                          if (result == null) {
-                                                            return;
-                                                          }
-
-                                                          final min = double
-                                                              .parse(result[
-                                                                  "value1"]);
-
-                                                          ref
-                                                              .read(
-                                                                  rtdbProvider)
-                                                              .setThresholdMinNutrient(
-                                                                  min);
-                                                        },
-                                                        icon: const Icon(
-                                                          Icons.edit,
-                                                          color:
-                                                              Color(0xFF64748B),
-                                                        ),
-                                                      )
                                                     ],
                                                   ),
                                                 )
@@ -1285,124 +1343,183 @@ class _ControlsState extends ConsumerState<Controls>
                                                       .symmetric(
                                                       vertical: 8.0,
                                                       horizontal: 16.0),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
-                                                      Column(
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 10),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: const Color(
+                                                              0xFFFEF3C6),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                        ),
+                                                        child: const Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Icon(
+                                                                Icons
+                                                                    .info_outline,
+                                                                size: 14,
+                                                                color: Color(
+                                                                    0xFFBB4D00)),
+                                                            SizedBox(
+                                                                width: 6),
+                                                            Expanded(
+                                                              child: Text(
+                                                                "Rekomendasi: 5.5 - 6.5 pH untuk sebagian besar tanaman hidroponik",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 11,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color: Color(
+                                                                      0xFFBB4D00),
+                                                                  fontFamily:
+                                                                      "PlusJakartaSans",
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 12),
+                                                      Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                                .spaceBetween,
                                                         children: [
-                                                          const Text(
-                                                            "Set Minimum Threshold:",
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                fontFamily:
-                                                                    "PlusJakartaSans",
-                                                                fontSize: 14),
-                                                          ),
-                                                          ValueListenableBuilder<
-                                                              double>(
-                                                            valueListenable: rtdb
-                                                                .phThresholdMin,
-                                                            builder:
-                                                                (_, value, __) {
-                                                              return Text(
-                                                                "${value.toStringAsFixed(2)} pH",
-                                                                style: const TextStyle(
+                                                          Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const Text(
+                                                                "Set Minimum Threshold:",
+                                                                style: TextStyle(
                                                                     fontWeight:
                                                                         FontWeight
-                                                                            .w400,
+                                                                            .w500,
                                                                     fontFamily:
                                                                         "PlusJakartaSans",
                                                                     fontSize:
                                                                         14),
+                                                              ),
+                                                              ValueListenableBuilder<
+                                                                  double>(
+                                                                valueListenable:
+                                                                    rtdb.phThresholdMin,
+                                                                builder: (_,
+                                                                    value, __) {
+                                                                  return Text(
+                                                                    "${value.toStringAsFixed(2)} pH",
+                                                                    style: const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w400,
+                                                                        fontFamily:
+                                                                            "PlusJakartaSans",
+                                                                        fontSize:
+                                                                            14),
+                                                                  );
+                                                                },
+                                                              )
+                                                            ],
+                                                          ),
+                                                          IconButton(
+                                                            onPressed:
+                                                                () async {
+                                                              _phThresholdMinController
+                                                                      .text =
+                                                                  rtdb.phThresholdMin
+                                                                      .value
+                                                                      .toStringAsFixed(
+                                                                          2);
+
+                                                              final result =
+                                                                  await showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder: (_) =>
+                                                                    EditDialogPopup(
+                                                                  title:
+                                                                      "Edit pH Threshold",
+                                                                  isTwoFields:
+                                                                      false,
+                                                                  label1:
+                                                                      "Min Threshold",
+                                                                  controller1:
+                                                                      _phThresholdMinController,
+                                                                  keyboardType1:
+                                                                      TextInputType
+                                                                          .number,
+                                                                  onSave:
+                                                                      (value1,
+                                                                          _) {
+                                                                    final newMin =
+                                                                        double.tryParse(
+                                                                            value1.trim());
+
+                                                                    if (newMin ==
+                                                                        null) {
+                                                                      return const SaveResult
+                                                                          .failed(
+                                                                          "Input harus berupa angka");
+                                                                    }
+
+                                                                    if (newMin ==
+                                                                        rtdb.phThresholdMin
+                                                                            .value) {
+                                                                      return const SaveResult
+                                                                          .failed(
+                                                                          "Threshold minimum pH sama dengan sebelumnya");
+                                                                    }
+
+                                                                    return const SaveResult
+                                                                        .success(
+                                                                        "Threshold minimum pH berhasil diperbarui");
+                                                                  },
+                                                                ),
                                                               );
+
+                                                              if (result ==
+                                                                  null) {
+                                                                return;
+                                                              }
+
+                                                              final min = double
+                                                                  .parse(result[
+                                                                      "value1"]);
+
+                                                              ref
+                                                                  .read(
+                                                                      rtdbProvider)
+                                                                  .setThresholdMinPh(
+                                                                      min);
                                                             },
+                                                            icon: const Icon(
+                                                              Icons.edit,
+                                                              color: Color(
+                                                                  0xFF64748B),
+                                                            ),
                                                           )
                                                         ],
                                                       ),
-                                                      IconButton(
-                                                        onPressed: () async {
-                                                          _phThresholdMinController
-                                                                  .text =
-                                                              rtdb.phThresholdMin
-                                                                  .value
-                                                                  .toStringAsFixed(
-                                                                      2);
-
-                                                          final result =
-                                                              await showDialog(
-                                                            context: context,
-                                                            builder: (_) =>
-                                                                EditDialogPopup(
-                                                              title:
-                                                                  "Edit pH Threshold",
-                                                              isTwoFields:
-                                                                  false,
-                                                              label1:
-                                                                  "Min Threshold",
-                                                              controller1:
-                                                                  _phThresholdMinController,
-                                                              keyboardType1:
-                                                                  TextInputType
-                                                                      .number,
-                                                              onSave:
-                                                                  (value1, _) {
-                                                                final newMin =
-                                                                    double.tryParse(
-                                                                        value1
-                                                                            .trim());
-
-                                                                if (newMin ==
-                                                                    null) {
-                                                                  return const SaveResult
-                                                                      .failed(
-                                                                      "Input harus berupa angka");
-                                                                }
-
-                                                                if (newMin ==
-                                                                    rtdb.phThresholdMin
-                                                                        .value) {
-                                                                  return const SaveResult
-                                                                      .failed(
-                                                                      "Threshold minimum pH sama dengan sebelumnya");
-                                                                }
-
-                                                                return const SaveResult
-                                                                    .success(
-                                                                    "Threshold minimum pH berhasil diperbarui");
-                                                              },
-                                                            ),
-                                                          );
-
-                                                          if (result == null) {
-                                                            return;
-                                                          }
-
-                                                          final min = double
-                                                              .parse(result[
-                                                                  "value1"]);
-
-                                                          ref
-                                                              .read(
-                                                                  rtdbProvider)
-                                                              .setThresholdMinPh(
-                                                                  min);
-                                                        },
-                                                        icon: const Icon(
-                                                          Icons.edit,
-                                                          color:
-                                                              Color(0xFF64748B),
-                                                        ),
-                                                      )
                                                     ],
                                                   ),
                                                 )

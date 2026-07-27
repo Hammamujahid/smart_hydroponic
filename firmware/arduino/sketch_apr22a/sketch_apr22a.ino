@@ -7,7 +7,7 @@
 #include <FirebaseClient.h>
 
 /* ================= WIFI & FIREBASE ================= */
-#define WIFI_SSID       "WASIS FAMILY"
+#define WIFI_SSID       "WASI FAMILY"
 #define WIFI_PASSWORD   "01021969"
 // #define WIFI_SSID       "Galaxy A03 Core1659"
 // #define WIFI_PASSWORD   "hehehehe"

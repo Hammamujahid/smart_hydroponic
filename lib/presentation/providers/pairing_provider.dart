@@ -7,6 +7,7 @@ import 'package:smart_hydroponic/data/repositories/user_repository.dart';
 import 'package:smart_hydroponic/data/services/auth_service.dart';
 import 'package:smart_hydroponic/data/services/device_service.dart';
 import 'package:smart_hydroponic/data/services/user_service.dart';
+import 'package:smart_hydroponic/presentation/providers/calibration_provider.dart';
 import 'package:smart_hydroponic/presentation/providers/user_provider.dart';
 
 final pairingProvider = ChangeNotifierProvider<PairingProvider>((ref) {
@@ -92,83 +93,84 @@ class PairingProvider extends ChangeNotifier {
 //     return;
 //   }
 
-Future<void> pair(String deviceId) async {
-  final uid = auth.uid;
+  Future<void> pair(String deviceId) async {
+    final uid = auth.uid;
 
-  if (uid == null) {
-    status = PairingStatus.error;
-    errorMessage = "User belum login";
-    notifyListeners();
-    return;
-  }
-
-  status = PairingStatus.loading;
-  notifyListeners();
-
-  try {
-
-    /// 1️⃣ cek device di RTDB
-    final existsInRTDB = await deviceRepo.deviceExistsInRTDB(deviceId);
-
-    if (!existsInRTDB) {
-      throw Exception("Device tidak ditemukan");
+    if (uid == null) {
+      status = PairingStatus.error;
+      errorMessage = "User belum login";
+      notifyListeners();
+      return;
     }
 
-    /// 2️⃣ cek device di Firestore
-    final device = await deviceRepo.getDeviceById(deviceId);
+    status = PairingStatus.loading;
+    notifyListeners();
 
-    if (device == null) {
+    try {
+      /// 1️⃣ cek device di RTDB
+      final existsInRTDB = await deviceRepo.deviceExistsInRTDB(deviceId);
 
-      /// 3️⃣ create device jika belum ada
-      final newDevice = DeviceModel(
-        deviceId: deviceId,
-        userId: uid,
-        title: "",
-        createdAt: DateTime.now(),
+      if (!existsInRTDB) {
+        throw Exception("Device tidak ditemukan");
+      }
+
+      /// 2️⃣ cek device di Firestore
+      final device = await deviceRepo.getDeviceById(deviceId);
+
+      if (device == null) {
+        /// 3️⃣ create device jika belum ada
+        final newDevice = DeviceModel(
+          deviceId: deviceId,
+          userId: uid,
+          title: "",
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        await deviceRepo.createDevice(newDevice);
+      } else {
+        /// 4️⃣ cek apakah sudah dipair
+        if (device.userId != null && device.userId!.isNotEmpty) {
+          throw Exception("Device sudah dipair");
+        }
+
+        /// update userId
+        await deviceRepo.updateDeviceById(
+          device.copyWith(
+            userId: uid,
+            updatedAt: DateTime.now(),
+          ),
+        );
+      }
+
+      /// update active device user
+      final user = await userRepo.getUserById(uid);
+
+      if (user == null) {
+        throw Exception("User tidak ditemukan");
+      }
+
+      final updatedUser = user.copyWith(
+        activeDeviceId: deviceId,
         updatedAt: DateTime.now(),
       );
 
-      await deviceRepo.createDevice(newDevice);
+      await userRepo.updateUserById(updatedUser);
+      final calibration = ref.read(calibrationProvider);
 
-    } else {
+      calibration.setTdsGradient(-376.013);
+      calibration.setTdsConstanta(1075.246);
+      calibration.setPhGradient(-8.04);
+      calibration.setPhConstanta(26.17);
+      
+      ref.read(userProvider).setSelectedUser(updatedUser);
 
-      /// 4️⃣ cek apakah sudah dipair
-      if (device.userId != null && device.userId!.isNotEmpty) {
-        throw Exception("Device sudah dipair");
-      }
-
-      /// update userId
-      await deviceRepo.updateDeviceById(
-        device.copyWith(
-          userId: uid,
-          updatedAt: DateTime.now(),
-        ),
-      );
+      status = PairingStatus.success;
+    } catch (e) {
+      status = PairingStatus.error;
+      errorMessage = e.toString();
     }
 
-    /// update active device user
-    final user = await userRepo.getUserById(uid);
-
-    if (user == null) {
-      throw Exception("User tidak ditemukan");
-    }
-
-    final updatedUser = user.copyWith(
-      activeDeviceId: deviceId,
-      updatedAt: DateTime.now(),
-    );
-
-    await userRepo.updateUserById(updatedUser);
-
-    ref.read(userProvider).setSelectedUser(updatedUser);
-
-    status = PairingStatus.success;
-
-  } catch (e) {
-    status = PairingStatus.error;
-    errorMessage = e.toString();
+    notifyListeners();
   }
-
-  notifyListeners();
-}
 }
